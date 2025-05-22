@@ -1,3 +1,11 @@
-*.ini
-GameTimeEstimator/data/
-venv/
+*.yaml
+*.env
+/.vscode/
+/data/
+/notebooks/data/
+/notebooks/models/
+/venv/
+__pycache__/
+
+
+!/src/data
