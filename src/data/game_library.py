@@ -25,7 +25,7 @@ def copy_raw_library_data(
     --------
     None
     """
-    library_raw = pd.read_csv(input_file)
+    library_raw = pd.read_csv(input_file, skiprows=1, header=0)
     library_raw.to_csv(output_file, index=False)
 
     print(
@@ -33,9 +33,9 @@ def copy_raw_library_data(
     )
 
 
-def process_library_data(
+def clean_library_data(
     input_file=f'{config["data"]["raw_path"]}library_raw.csv',
-    output_file=f'{config["data"]["interm_path"]}library_interm.csv',
+    output_file=f'{config["data"]["interm_path"]}library_cleaned.csv',
 ):
     """
     Reads a CSV file containing library data, cleans and processes the data by:
@@ -58,6 +58,12 @@ def process_library_data(
     """
     library_interm = pd.read_csv(input_file)
 
+    # Column name changes
+    library_interm = library_interm.rename(columns={
+        'CompletionStatus': 'Completion Status',
+        'ReleaseDate': 'Release Date'
+    })
+
     # Remove (Xbox), (Game Pass), (Switch), (PlayStation) tags from game names
     tags = {" (Xbox)", " (Game Pass)", " (Switch)", " (PlayStation)"}
     replacement = ""
@@ -70,9 +76,6 @@ def process_library_data(
 
     # Exclude games without a library Completion Status
     library_interm = library_interm[~library_interm["Completion Status"].isnull()]
-
-    # Exclude hidden games
-    library_interm = library_interm[library_interm["Hidden"] == False]
 
     # Drop duplicates
     library_interm = library_interm.drop_duplicates(subset=["Name", "Release Date"])
