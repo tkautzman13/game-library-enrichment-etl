@@ -9,18 +9,17 @@ with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 
-def hltb_prepare_library_data(
-    library_interm_file=f'{config["data"]["interm_path"]}library_interm.csv',
-    hltb_interm_file=f'{config["data"]["interm_path"]}hltb_interm.csv',
+def prepare_library_data_hltb(
+    interm_data_path=f'{config["data"]["interm_path"]}',
+    library_interm_file="library_cleaned.csv",
+    hltb_interm_file="hltb_interm.csv",
+    library_hltb_file="library_hltb.csv",
 ):
     # Import library data
-    library_prepped = pd.read_csv(library_interm_file)
+    library_prepped = pd.read_csv(interm_data_path + library_interm_file)
 
     # Fix dashes and colons found in library_data.Name
-    replacements = {
-        "–": "-",
-        ":": ""
-    }
+    replacements = {"–": "-", ":": ""}
     library_prepped["name_no_punct"] = library_prepped["Name"].replace(
         replacements, regex=True
     )
@@ -32,27 +31,35 @@ def hltb_prepare_library_data(
     library_prepped["Release Date"] = pd.to_datetime(library_prepped["Release Date"])
 
     # Check for hltb_interm.csv - if it exists, pass through only new records or recently released (within past 3 months) games
-    hltb_interm_file = Path(hltb_interm_file)
+    hltb_interm_file = Path(interm_data_path + hltb_interm_file)
     if hltb_interm_file.is_file():
-        hltb_interm = pd.read_csv(hltb_interm_file)
+        hltb_interm_df = pd.read_csv(hltb_interm_file)
         # Condition 1: Recent Release Date
         cond1 = library_prepped["Release Date"] >= (
             datetime.today() - timedelta(days=90)
         )
 
         # Condition 2: Game in library is not found in hltb_interm
-        cond2 = ~library_prepped["Name"].isin(hltb_interm["Library Name"])
+        cond2 = ~library_prepped["Name"].isin(hltb_interm_df["Library Name"])
 
         # Combine both conditions
         library_prepped = library_prepped[cond1 | cond2]
     else:
         pass
 
-    # Return prepped library_data
-    return library_prepped
+    # Export prepped library_data
+    library_prepped.to_csv(interm_data_path + library_hltb_file, index=False)
+
+    print(f"Library data successfully prepared for HLTB query and stored in: {interm_data_path + library_hltb_file}")
 
 
-def extract_raw_hltb_data(library_prepped, hltb_raw_path=config["data"]["hltb_raw_path"]):
+def extract_raw_hltb_data(
+    library_hltb_file=f'{config["data"]["interm_path"]}library_hltb.csv', 
+    hltb_raw_path=config["data"]["hltb_raw_path"]
+):
+    # Import library_hltb.csv
+    library_prepped = pd.read_csv(library_hltb_file)
+
     # Create empty hltb_df
     hltb_raw_df = pd.DataFrame()
 
@@ -94,3 +101,5 @@ def extract_raw_hltb_data(library_prepped, hltb_raw_path=config["data"]["hltb_ra
     # Output hltb_raw dataset
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
+
+    print(f"Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv")
