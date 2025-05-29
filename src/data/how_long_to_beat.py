@@ -11,6 +11,7 @@ def prepare_library_data_hltb(
     # hltb_interm_file="hltb_interm.csv",
     library_hltb_file="library_hltb.csv",
 ):
+    print('Beginning library data processing for HLTB query...')
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -40,13 +41,14 @@ def prepare_library_data_hltb(
     library_prepped.to_csv(interm_data_path + library_hltb_file, index=False)
 
     print(
-        f"Library data successfully prepared for HLTB query and stored in: {interm_data_path + library_hltb_file}"
+        f"Complete: Library data successfully prepared for HLTB query and stored in: {interm_data_path + library_hltb_file}"
     )
 
 
 def extract_raw_hltb_data(
     config_path="config.yaml", library_hltb_file="library_hltb.csv"
 ):
+    print('Beginning HLTB data extraction...')
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -106,7 +108,7 @@ def extract_raw_hltb_data(
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
 
     print(
-        f"Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv"
+        f"Complete: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv"
     )
 
 
@@ -396,6 +398,7 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
     Returns:
         tuple: (processed_hltb_dataframe, matching_statistics)
     """
+    print('Beginning HLTB data processing...')
     # Load configuration
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -450,5 +453,5 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
 
     if verbose:
         print(
-            f"HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv"
+            f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv"
         )

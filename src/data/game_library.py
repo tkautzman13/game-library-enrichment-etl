@@ -22,6 +22,7 @@ def copy_raw_library_data(
     None
     """
 
+    print('Beginning library source data extraction...')
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -36,7 +37,7 @@ def copy_raw_library_data(
     library_raw.to_csv(output_path, index=False)
 
     print(
-        f"Library data successfully pulled from {input_file} and stored in: {output_path}"
+        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_path}"
     )
 
 
@@ -64,6 +65,7 @@ def clean_library_data(
     --------
     None
     """
+    print('Beginning library data cleaning...')
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -101,4 +103,4 @@ def clean_library_data(
     # Export intermediate data
     library_interm.to_csv(output_path, index=False)
 
-    print(f"Library data successfully processed and stored in: {output_path}")
+    print(f"Complete: Library data successfully processed and stored in: {output_path}")
