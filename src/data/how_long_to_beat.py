@@ -11,21 +11,23 @@ def prepare_library_data_hltb(
     # hltb_interm_file="hltb_interm.csv",
     library_hltb_file="library_hltb.csv",
 ):
-    print('Beginning library data processing for HLTB query...')
+    print("Beginning library data processing for HLTB query...")
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    print('Reading cleaned library data...')
+    print("Reading cleaned library data...")
     # Interm path
     interm_data_path = f'{config["data"]["interm_path"]}'
 
-    print('Preparing library data for HLTB query...')
+    print("Preparing library data for HLTB query...")
     # Import library data
     library_prepped = pd.read_csv(interm_data_path + library_interm_file)
 
     # Filter out 'HLTB Ignore' flagged records
-    library_prepped = library_prepped[~library_prepped["Categories"].str.contains("HLTB Ignore", na=False)]
+    library_prepped = library_prepped[
+        ~library_prepped["Categories"].str.contains("HLTB Ignore", na=False)
+    ]
 
     # Fix dashes and colons found in library_data.Name
     replacements = {"–": "-", ":": ""}
@@ -36,7 +38,7 @@ def prepare_library_data_hltb(
     # Ensure the Release Date field is a date
     library_prepped["Release Date"] = pd.to_datetime(library_prepped["Release Date"])
 
-    print('Writing prepared library HLTB data...')
+    print("Writing prepared library HLTB data...")
     # Export prepped library_data
     library_prepped.to_csv(interm_data_path + library_hltb_file, index=False)
 
@@ -48,7 +50,7 @@ def prepare_library_data_hltb(
 def extract_raw_hltb_data(
     config_path="config.yaml", library_hltb_file="library_hltb.csv"
 ):
-    print('Beginning HLTB data extraction...')
+    print("Beginning HLTB data extraction...")
     # Load config file
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -57,14 +59,14 @@ def extract_raw_hltb_data(
     library_hltb_path = f'{config["data"]["interm_path"]}{library_hltb_file}'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
-    print('Reading prepared library HLTB data...')
+    print("Reading prepared library HLTB data...")
     # Import library_hltb.csv
     library_prepped = pd.read_csv(library_hltb_path)
 
     # Create empty hltb_df
     hltb_raw_df = pd.DataFrame()
 
-    print('Fetching HLTB data...')
+    print("Fetching HLTB data...")
     # For loop to query HLTB data
     for index, row in library_prepped.iterrows():
         # Get results_list (Check if game is marked as "DLC")
@@ -100,9 +102,9 @@ def extract_raw_hltb_data(
             df["Library ID"] = row["Id"]
 
         hltb_raw_df = pd.concat([hltb_raw_df, df])
-    print('HLTB data successfully extracted!')
+    print("HLTB data successfully extracted!")
 
-    print('Writing raw HLTB data...')
+    print("Writing raw HLTB data...")
     # Output hltb_raw dataset
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
@@ -398,7 +400,7 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
     Returns:
         tuple: (processed_hltb_dataframe, matching_statistics)
     """
-    print('Beginning HLTB data processing...')
+    print("Beginning HLTB data processing...")
     # Load configuration
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
@@ -446,10 +448,19 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
             hltb_with_library, library_hltb, interm_path
         )
 
-    if verbose:
-        print(f"Pipeline complete! Processed {len(hltb_processed)} HLTB records.")
-
-    hltb_processed.to_csv(f"{interm_path}hltb_cleaned.csv")
+    hltb_processed[
+        [
+            "Library Name",
+            "Library ID",
+            "Library Release Year",
+            "hltb_main",
+            "hltb_extra",
+            "hltb_completionist",
+        ]
+    ].to_csv(
+        f"{interm_path}hltb_cleaned.csv",
+        index=False,
+    )
 
     if verbose:
         print(
