@@ -11,6 +11,23 @@ def prepare_library_data_hltb(
     # hltb_interm_file="hltb_interm.csv",
     library_hltb_file="library_hltb.csv",
 ):
+    """
+    Prepare the cleaned library data for HLTB querying by removing unwanted entries,
+    cleaning punctuation, and ensuring proper date formatting.
+
+    Parameters:
+    -----------
+    config_path : str
+        Path to the configuration YAML file.
+    library_interm_file : str
+        Name of the CSV file containing cleaned library data.
+    library_hltb_file : str
+        Output filename for the prepared library HLTB data.
+
+    Returns:
+    --------
+    None
+    """
     print("Beginning library data processing for HLTB query...")
     # Load config file
     with open(config_path, "r") as f:
@@ -50,6 +67,20 @@ def prepare_library_data_hltb(
 def extract_raw_hltb_data(
     config_path="config.yaml", library_hltb_file="library_hltb.csv"
 ):
+    """
+    Query HowLongToBeat and extract raw time-to-beat data for each game in the library.
+
+    Parameters:
+    -----------
+    config_path : str
+        Path to the configuration YAML file.
+    library_hltb_file : str
+        Name of the prepared library file used for HLTB queries.
+
+    Returns:
+    --------
+    None
+    """
     print("Beginning HLTB data extraction...")
     # Load config file
     with open(config_path, "r") as f:
@@ -116,13 +147,17 @@ def extract_raw_hltb_data(
 
 def load_latest_hltb_raw_data(path):
     """
-    Load the most recent HLTB CSV file from the extracts folder.
+    Load the most recent HLTB raw data CSV file from a specified folder.
 
-    Args:
-        hltb_raw_path (str): Path to the folder containing HLTB extract CSV files
+    Parameters:
+    -----------
+    path : str
+        Path to the folder containing HLTB extract CSV files.
 
     Returns:
-        pd.DataFrame: The most recent HLTB raw data
+    --------
+    pd.DataFrame
+        The most recently created HLTB raw data.
     """
     # List all CSV files in the folder
     csv_files = list(Path(path).glob("*.csv"))
@@ -139,13 +174,17 @@ def load_latest_hltb_raw_data(path):
 
 def load_prepared_library_data(path):
     """
-    Load library data and prepare release year column.
+    Load the prepared library HLTB data and extract the release year from the release date.
 
-    Args:
-        interm_path (str): Path to the intermediate data folder
+    Parameters:
+    -----------
+    path : str
+        Path to the folder containing intermediate data.
 
     Returns:
-        pd.DataFrame: Library data with prepared release year column
+    --------
+    pd.DataFrame
+        Library data with the release year column added.
     """
     # Load library data
     library_hltb = pd.read_csv(f"{path}library_hltb.csv")
@@ -160,10 +199,17 @@ def load_prepared_library_data(path):
 
 def select_best_hltb_match(group):
     """
-    For each Library ID group, if there's only one record, return it.
-    If there are multiple records (same max similarity), pick the one
-    with release year closest to the library release year.
-    Also detect and flag perfect vs imperfect matches.
+    Select the best match from HLTB results based on release year similarity and flag quality.
+
+    Parameters:
+    -----------
+    group : pd.DataFrame
+        A grouped subset of HLTB data corresponding to a single Library ID.
+
+    Returns:
+    --------
+    pd.DataFrame
+        The best-matching record(s) for the given Library ID group.
     """
     if len(group) == 1:
         return group
@@ -193,15 +239,21 @@ def select_best_hltb_match(group):
 
 def filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=True):
     """
-    Filter HLTB data to keep only the best matches and resolve duplicates using release years.
+    Filter and match raw HLTB data with the library, resolving duplicates using release years.
 
-    Args:
-        hltb_raw (pd.DataFrame): Raw HLTB query results
-        library_hltb (pd.DataFrame): Library data with release years
-        verbose (bool): Whether to print matching progress messages
+    Parameters:
+    -----------
+    hltb_raw : pd.DataFrame
+        Raw HLTB query results.
+    library_hltb : pd.DataFrame
+        Library data with release year information.
+    verbose : bool
+        Whether to print progress messages.
 
     Returns:
-        pd.DataFrame: Filtered HLTB data with best matches selected
+    --------
+    pd.DataFrame
+        Filtered and matched HLTB data.
     """
     # Keep only hltb records that contain the maximum similarity score for each Library ID
     hltb_filtered = hltb_raw[
@@ -243,15 +295,20 @@ def filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=True):
 
 def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm_path):
     """
-    Create a comprehensive report of all matching issues for review.
+    Create a comprehensive report on the quality of matches between HLTB and library data.
 
-    Args:
-        hltb_with_library (pd.DataFrame): HLTB data merged with library data
-        library_hltb (pd.DataFrame): Original library data
-        interm_path (str): Path to save report CSV files
+    Parameters:
+    -----------
+    hltb_with_library : pd.DataFrame
+        HLTB data merged with library data for analysis.
+    library_hltb : pd.DataFrame
+        Original library data used as reference.
+    interm_path : str
+        Path to save output report files.
 
     Returns:
-        dict: Summary statistics of the matching process
+    --------
+    None
     """
     year_mismatches = []
     no_hltb_records = []
@@ -379,26 +436,23 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm
     print(f"   Year mismatches: {len(year_mismatches)}")
     print("=" * 80)
 
-    return {
-        "total_games": total_library_games,
-        "successful_matches": successful_matches,
-        "no_hltb_records": len(no_hltb_records),
-        "low_similarity": len(low_similarity_games),
-        "year_mismatches": len(year_mismatches),
-    }
-
 
 def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
     """
-    Complete HLTB data processing pipeline.
+    Execute the full processing pipeline for HowLongToBeat data integration.
 
-    Args:
-        config_path (str): Path to configuration YAML file
-        generate_report (bool): Whether to generate comprehensive matching report
-        verbose (bool): Whether to print detailed progress messages
+    Parameters:
+    -----------
+    config_path : str
+        Path to the configuration YAML file.
+    generate_report : bool
+        Whether to generate a comprehensive matching report.
+    verbose : bool
+        Whether to print detailed status messages during processing.
 
     Returns:
-        tuple: (processed_hltb_dataframe, matching_statistics)
+    --------
+    None
     """
     print("Beginning HLTB data processing...")
     # Load configuration

@@ -12,10 +12,10 @@ def copy_raw_library_data(
 
     Parameters:
     -----------
-    input_file : str
-        The file path to the input CSV file containing the raw library data.
+    config_path : str
+        Path to the configuration YAML file.
     output_file : str
-        The file path where the raw data CSV will be saved.
+        The file name for the raw data CSV.
 
     Returns:
     --------
@@ -56,10 +56,12 @@ def clean_library_data(
 
     Parameters:
     -----------
+    config_path : str
+        Path to the configuration YAML file.
     input_file : str
-        The file path to the input CSV file containing raw or intermediate library data.
+        The file name for the input CSV file containing raw or intermediate library data.
     output_file : str
-        The file path where the cleaned and processed CSV data will be saved.
+        The file name for the cleaned and processed CSV data.
 
     Returns:
     --------
