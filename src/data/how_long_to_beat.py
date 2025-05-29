@@ -4,17 +4,19 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import yaml
 
-# Pull in yaml config file
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
-
-
 def prepare_library_data_hltb(
-    interm_data_path=f'{config["data"]["interm_path"]}',
+    config_path='config.yaml',
     library_interm_file="library_cleaned.csv",
-    hltb_interm_file="hltb_interm.csv",
-    library_hltb_file="library_hltb.csv",
+    # hltb_interm_file="hltb_interm.csv",
+    library_hltb_file="library_hltb.csv"
 ):
+    # Load config file
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Interm path
+    interm_data_path=f'{config["data"]["interm_path"]}',
+
     # Import library data
     library_prepped = pd.read_csv(interm_data_path + library_interm_file)
 
@@ -24,28 +26,25 @@ def prepare_library_data_hltb(
         replacements, regex=True
     )
 
-    # Keep only the Name and name_no_punct fields
-    library_prepped[["Name", "name_no_punct"]]
-
     # Ensure the Release Date field is a date
     library_prepped["Release Date"] = pd.to_datetime(library_prepped["Release Date"])
 
-    # Check for hltb_interm.csv - if it exists, pass through only new records or recently released (within past 3 months) games
-    hltb_interm_file = Path(interm_data_path + hltb_interm_file)
-    if hltb_interm_file.is_file():
-        hltb_interm_df = pd.read_csv(hltb_interm_file)
-        # Condition 1: Recent Release Date
-        cond1 = library_prepped["Release Date"] >= (
-            datetime.today() - timedelta(days=90)
-        )
+    # # Check for hltb_interm.csv - if it exists, pass through only new records or recently released (within past 3 months) games
+    # hltb_interm_file = Path(interm_data_path + hltb_interm_file)
+    # if hltb_interm_file.is_file():
+    #     hltb_interm_df = pd.read_csv(hltb_interm_file)
+    #     # Condition 1: Recent Release Date
+    #     cond1 = library_prepped["Release Date"] >= (
+    #         datetime.today() - timedelta(days=90)
+    #     )
 
-        # Condition 2: Game in library is not found in hltb_interm
-        cond2 = ~library_prepped["Name"].isin(hltb_interm_df["Library Name"])
+    #     # Condition 2: Game in library is not found in hltb_interm
+    #     cond2 = ~library_prepped["Name"].isin(hltb_interm_df["Library Name"])
 
-        # Combine both conditions
-        library_prepped = library_prepped[cond1 | cond2]
-    else:
-        pass
+    #     # Combine both conditions
+    #     library_prepped = library_prepped[cond1 | cond2]
+    # else:
+    #     pass
 
     # Export prepped library_data
     library_prepped.to_csv(interm_data_path + library_hltb_file, index=False)
@@ -54,11 +53,19 @@ def prepare_library_data_hltb(
 
 
 def extract_raw_hltb_data(
-    library_hltb_file=f'{config["data"]["interm_path"]}library_hltb.csv', 
-    hltb_raw_path=config["data"]["hltb_raw_path"]
+    config_path='config.yaml',
+    library_hltb_file='library_hltb.csv'
 ):
+    # Load config file
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Paths
+    library_hltb_path=f'{config["data"]["interm_path"]}{library_hltb_file}' 
+    hltb_raw_path=config["data"]["hltb_raw_path"]
+
     # Import library_hltb.csv
-    library_prepped = pd.read_csv(library_hltb_file)
+    library_prepped = pd.read_csv(library_hltb_path)
 
     # Create empty hltb_df
     hltb_raw_df = pd.DataFrame()
@@ -95,6 +102,7 @@ def extract_raw_hltb_data(
 
             # Add Playnite game name to dataframe
             df["Library Name"] = row["Name"]
+            df["Library ID"] = row["Id"]
 
         hltb_raw_df = pd.concat([hltb_raw_df, df])
 
