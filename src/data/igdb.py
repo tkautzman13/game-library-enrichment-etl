@@ -21,16 +21,16 @@ def connect_to_igdb(config_path='config.yaml'):
         # Get access token
         token = response.json().get('access_token')
         print('Token received.')
-        wrapper = IGDBWrapper(client_id, token)
-        return wrapper
+        connection = IGDBWrapper(client_id, token)
+        return connection
     else:
         print(f"Failed to get token: {response.status_code}")
         print(response.text)
 
 
-def test_connection(wrapper):
+def test_connection(connection):
     try:
-        json_results = wrapper.api_request(
+        json_results = connection.api_request(
             'games',
             'fields name; limit 10;'
         )
