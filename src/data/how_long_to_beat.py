@@ -91,11 +91,11 @@ def extract_raw_hltb_data(
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
     print("Reading prepared library HLTB data...")
+
     # Import library_hltb.csv
     library_prepped = pd.read_csv(library_hltb_path)
 
-    # Create empty hltb_df
-    hltb_raw_df = pd.DataFrame()
+    all_hltb_data = []
 
     print("Fetching HLTB data...")
     # For loop to query HLTB data
@@ -112,8 +112,7 @@ def extract_raw_hltb_data(
                 search_modifiers=SearchModifiers.HIDE_DLC,
             )
 
-        # Convert results_list to dataframe
-        data = []
+        # Process all results for this game
         for element in results_list:
             row_data = {
                 "game": element.game_name,
@@ -122,17 +121,14 @@ def extract_raw_hltb_data(
                 "hltb_main": element.main_story,
                 "hltb_extra": (element.main_extra - element.main_story),
                 "hltb_completionist": (element.completionist - element.main_story),
+                "Library Name": row["Name"],
+                "Library ID": row["Id"]
             }
+            all_hltb_data.append(row_data)
 
-            data.append(row_data)
+    # Create DataFrame once from all collected data
+    hltb_raw_df = pd.DataFrame(all_hltb_data)
 
-            df = pd.DataFrame(data)
-
-            # Add Playnite game name to dataframe
-            df["Library Name"] = row["Name"]
-            df["Library ID"] = row["Id"]
-
-        hltb_raw_df = pd.concat([hltb_raw_df, df])
     print("HLTB data successfully extracted!")
 
     print("Writing raw HLTB data...")
