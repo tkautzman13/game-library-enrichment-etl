@@ -289,7 +289,7 @@ def filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=True):
     return hltb_new
 
 
-def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm_path):
+def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_interm_path):
     """
     Create a comprehensive report on the quality of matches between HLTB and library data.
 
@@ -299,7 +299,7 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm
         HLTB data merged with library data for analysis.
     library_hltb : pd.DataFrame
         Original library data used as reference.
-    interm_path : str
+    hltb_interm_path : str
         Path to save output report files.
 
     Returns:
@@ -388,8 +388,8 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm
         print("-" * 60)
         no_hltb_df = pd.DataFrame(no_hltb_records)
         print(no_hltb_df.to_string(index=False))
-        no_hltb_df.to_csv(f"{interm_path}no_hltb_records.csv", index=False)
-        print(f"💾 Details saved to: {interm_path}no_hltb_records.csv")
+        no_hltb_df.to_csv(f"{hltb_interm_path}no_hltb_records.csv", index=False)
+        print(f"💾 Details saved to: {hltb_interm_path}no_hltb_records.csv")
     else:
         print("\n✅ All library games have HLTB records!")
 
@@ -399,8 +399,8 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm
         print("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
         print(low_sim_df.to_string(index=False))
-        low_sim_df.to_csv(f"{interm_path}low_similarity_games.csv", index=False)
-        print(f"💾 Details saved to: {interm_path}low_similarity_games.csv")
+        low_sim_df.to_csv(f"{hltb_interm_path}low_similarity_games.csv", index=False)
+        print(f"💾 Details saved to: {hltb_interm_path}low_similarity_games.csv")
     else:
         print("\n✅ All matched games have similarity ≥ 0.75!")
 
@@ -410,8 +410,8 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, interm
         print("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
         print(mismatch_df.to_string(index=False))
-        mismatch_df.to_csv(f"{interm_path}year_mismatches.csv", index=False)
-        print(f"💾 Details saved to: {interm_path}year_mismatches.csv")
+        mismatch_df.to_csv(f"{hltb_interm_path}year_mismatches.csv", index=False)
+        print(f"💾 Details saved to: {hltb_interm_path}year_mismatches.csv")
     else:
         print("\n✅ No release year mismatches found!")
 
@@ -457,6 +457,7 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
     interm_path = config["data"]["interm_path"]
+    hltb_interm_path = config["data"]["hltb_interm_path"]
 
     if verbose:
         print("Starting HLTB data processing pipeline...")
@@ -495,7 +496,7 @@ def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=T
         )
 
         matching_stats = create_comprehensive_matching_report(
-            hltb_with_library, library_hltb, interm_path
+            hltb_with_library, library_hltb, hltb_interm_path
         )
 
     hltb_processed[
