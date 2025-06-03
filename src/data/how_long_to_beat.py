@@ -26,7 +26,7 @@ def transform_library_data_for_hltb(
     # Files
     interm_data_path = f'{config["data"]["interm_path"]}'
     library_interm_file=f'{interm_data_path}library_cleaned.csv'
-    library_hltb_file=f'{interm_data_path}library_hltb.csv'
+    library_hltb_file=f'{interm_data_path}_library_hltb_prep.csv'
 
     print("Reading cleaned library data...")
     # Import library data
@@ -74,12 +74,12 @@ def extract_hltb_data(
     print("Beginning HLTB data extraction...")
 
     # Paths
-    library_hltb_file = f'{config["data"]["interm_path"]}library_hltb.csv'
+    library_hltb_file = f'{config["data"]["interm_path"]}_library_hltb_prep.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
     print("Reading prepared library HLTB data...")
 
-    # Import library_hltb.csv
+    # Import _library_hltb_prep.csv
     library_prepped = pd.read_csv(library_hltb_file)
 
     all_hltb_data = []
@@ -253,7 +253,7 @@ def load_prepared_library_data(path):
         Library data with the release year column added.
     """
     # Load library data
-    library_hltb = pd.read_csv(f"{path}library_hltb.csv")
+    library_hltb = pd.read_csv(f"{path}_library_hltb_prep.csv")
 
     # Add Library Release Dates to the library data
     library_hltb["Library Release Year"] = pd.to_datetime(
