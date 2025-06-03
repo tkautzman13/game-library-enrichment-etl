@@ -28,13 +28,51 @@ def connect_to_igdb(config_path='config.yaml'):
         print(response.text)
 
 
-def test_connection(connection):
+def test_igdb_connection(connection):
     try:
-        json_results = connection.api_request(
+        connection.api_request(
             'games',
             'fields name; limit 10;'
         )
-        print("Success: test API request returned results.")
-        return json_results
+        print("Success: API test returned results.")
+        return True
     except Exception as err:
         print(f"Error occurred during test request: {err}")
+        return False
+    
+
+def extract_igdb_data(connection, endpoint, fields=['*'], config_path='config.yaml'):
+    # Load config file
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    # Specify parameters
+    output_path=config['data']['igdb_raw']
+    data = []
+    o=0
+
+    print(f'Fetching data from {endpoint} endpoint')
+    # Fetch games data
+    while True:
+        json_results = connection.api_request(
+            f'{endpoint}',
+            f'fields {', '.join(fields)}; limit 500; offset {o};'
+        )
+
+        json_load = json.loads(json_results)
+
+        data.extend(json_load)
+
+        o += 500
+
+        if len(json_load) < 500:
+            break
+
+    print(f'{len(data)} rows successfully retrieved from {endpoint}')
+
+    df = pd.DataFrame(data)
+
+    df.to_csv(f'{output_path}igdb_{endpoint}.csv', index=False)
+    print(f'Complete: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
+
+
