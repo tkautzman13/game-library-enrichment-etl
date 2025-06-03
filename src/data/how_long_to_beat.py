@@ -55,7 +55,7 @@ def transform_library_data_for_hltb(
     library_prepped.to_csv(library_hltb_file, index=False)
 
     print(
-        f"Complete: Library data successfully prepared for HLTB query and stored in: {library_hltb_file}"
+        f"Complete: Library data successfully prepared for HLTB query and stored in: {library_hltb_file}."
     )
 
 
@@ -122,7 +122,7 @@ def extract_hltb_data(
     # Create DataFrame once from all collected data
     hltb_raw_df = pd.DataFrame(all_hltb_data)
 
-    print("HLTB data successfully extracted!")
+    print("HLTB data successfully extracted.")
 
     print("Writing raw HLTB data...")
     # Output hltb_raw dataset
@@ -130,8 +130,94 @@ def extract_hltb_data(
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
 
     print(
-        f"Complete: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv"
+        f"Complete: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv."
     )
+
+
+def transform_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
+    """
+    Execute the full processing pipeline for HowLongToBeat data integration.
+
+    Parameters:
+    -----------
+    config_path : str
+        Path to the configuration YAML file.
+    generate_report : bool
+        Whether to generate a comprehensive matching report.
+    verbose : bool
+        Whether to print detailed status messages during processing.
+
+    Returns:
+    --------
+    None
+    """
+    print("Beginning HLTB data processing...")
+    # Load configuration
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    hltb_raw_path = config["data"]["hltb_raw_path"]
+    interm_path = config["data"]["interm_path"]
+    hltb_interm_path = config["data"]["hltb_interm_path"]
+
+    if verbose:
+        print("Starting HLTB data processing pipeline...")
+
+    # Step 1: Load latest HLTB data
+    if verbose:
+        print("Loading HLTB data...")
+    hltb_raw = load_latest_hltb_raw_data(hltb_raw_path)
+
+    # Step 2: Load and prepare library data
+    if verbose:
+        print("Loading prepared library data...")
+    library_hltb = load_prepared_library_data(interm_path)
+
+    # Step 3: Filter and match HLTB data
+    if verbose:
+        print("Processing HLTB matches...")
+    hltb_processed = filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=verbose)
+
+    # Step 4: Generate comprehensive report (optional)
+    matching_stats = None
+    if generate_report:
+        # Need to recreate hltb_with_library for reporting
+        hltb_filtered = hltb_raw[
+            hltb_raw["similarity"]
+            == hltb_raw.groupby(by="Library ID", as_index=False)[
+                "similarity"
+            ].transform("max")
+        ]
+        hltb_filtered = hltb_filtered[~hltb_filtered.duplicated()]
+        hltb_with_library = hltb_filtered.merge(
+            library_hltb[["Id", "Name", "Library Release Year"]],
+            how="right",
+            left_on="Library ID",
+            right_on="Id",
+        )
+
+        matching_stats = create_comprehensive_matching_report(
+            hltb_with_library, library_hltb, hltb_interm_path
+        )
+
+    hltb_processed[
+        [
+            "Library Name",
+            "Library ID",
+            "Library Release Year",
+            "hltb_main",
+            "hltb_extra",
+            "hltb_completionist",
+        ]
+    ].to_csv(
+        f"{interm_path}hltb_cleaned.csv",
+        index=False,
+    )
+
+    if verbose:
+        print(
+            f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv."
+        )
 
 
 def load_latest_hltb_raw_data(path):
@@ -425,88 +511,3 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_i
     print(f"   Year mismatches: {len(year_mismatches)}")
     print("=" * 80)
 
-
-def transform_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
-    """
-    Execute the full processing pipeline for HowLongToBeat data integration.
-
-    Parameters:
-    -----------
-    config_path : str
-        Path to the configuration YAML file.
-    generate_report : bool
-        Whether to generate a comprehensive matching report.
-    verbose : bool
-        Whether to print detailed status messages during processing.
-
-    Returns:
-    --------
-    None
-    """
-    print("Beginning HLTB data processing...")
-    # Load configuration
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    hltb_raw_path = config["data"]["hltb_raw_path"]
-    interm_path = config["data"]["interm_path"]
-    hltb_interm_path = config["data"]["hltb_interm_path"]
-
-    if verbose:
-        print("Starting HLTB data processing pipeline...")
-
-    # Step 1: Load latest HLTB data
-    if verbose:
-        print("Loading HLTB data...")
-    hltb_raw = load_latest_hltb_raw_data(hltb_raw_path)
-
-    # Step 2: Load and prepare library data
-    if verbose:
-        print("Loading prepared library data...")
-    library_hltb = load_prepared_library_data(interm_path)
-
-    # Step 3: Filter and match HLTB data
-    if verbose:
-        print("Processing HLTB matches...")
-    hltb_processed = filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=verbose)
-
-    # Step 4: Generate comprehensive report (optional)
-    matching_stats = None
-    if generate_report:
-        # Need to recreate hltb_with_library for reporting
-        hltb_filtered = hltb_raw[
-            hltb_raw["similarity"]
-            == hltb_raw.groupby(by="Library ID", as_index=False)[
-                "similarity"
-            ].transform("max")
-        ]
-        hltb_filtered = hltb_filtered[~hltb_filtered.duplicated()]
-        hltb_with_library = hltb_filtered.merge(
-            library_hltb[["Id", "Name", "Library Release Year"]],
-            how="right",
-            left_on="Library ID",
-            right_on="Id",
-        )
-
-        matching_stats = create_comprehensive_matching_report(
-            hltb_with_library, library_hltb, hltb_interm_path
-        )
-
-    hltb_processed[
-        [
-            "Library Name",
-            "Library ID",
-            "Library Release Year",
-            "hltb_main",
-            "hltb_extra",
-            "hltb_completionist",
-        ]
-    ].to_csv(
-        f"{interm_path}hltb_cleaned.csv",
-        index=False,
-    )
-
-    if verbose:
-        print(
-            f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv"
-        )

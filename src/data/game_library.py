@@ -35,7 +35,7 @@ def extract_library_data(
     library_raw.to_csv(output_file, index=False)
 
     print(
-        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_file}"
+        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_file}."
     )
 
 
@@ -97,4 +97,4 @@ def transform_library_data(
     # Export intermediate data
     library_interm.to_csv(output_file, index=False)
 
-    print(f"Complete: Library data successfully cleaned and stored in: {output_file}")
+    print(f"Complete: Library data successfully cleaned and stored in: {output_file}.")
