@@ -3,7 +3,7 @@ import yaml
 
 
 def extract_library_data(
-    config_path="config.yaml"
+    config
 ):
     """
     Reads a CSV file containing raw library data from the specified input path,
@@ -20,9 +20,6 @@ def extract_library_data(
     """
 
     print('Beginning library source data extraction...')
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Files
     input_file = config["data"]["library_source_file"]
@@ -40,7 +37,7 @@ def extract_library_data(
 
 
 def transform_library_data(
-    config_path="config.yaml",
+    config,
 ):
     """
     Reads a CSV file containing library data, cleans and processes the data by:
@@ -60,9 +57,6 @@ def transform_library_data(
     None
     """
     print('Beginning library data cleaning...')
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Files
     input_file = f'{config["data"]["raw_path"]}library_raw.csv'

@@ -6,11 +6,8 @@ import json
 from igdb.wrapper import IGDBWrapper
 import time
 
-def connect_to_igdb(config_path='config.yaml'):
+def connect_to_igdb(config):
     print('Beginning IGDB connection...')
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Credentials for url
     client_id = config['igdb_api']['client_id']
@@ -45,11 +42,10 @@ def test_igdb_connection(connection):
         return False
 
 
-def extract_and_update_igdb_data(connection, config_path='config.yaml'):
+def extract_and_update_igdb_data(connection, config):
     print('Beginning IGDB extracts/updates...')
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
+    # Specify parameters
     igdb_raw_path = config['data']['igdb_raw_path']
     endpoint_list = [
         'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives'
@@ -61,19 +57,15 @@ def extract_and_update_igdb_data(connection, config_path='config.yaml'):
             if os.path.isfile(f'{igdb_raw_path}igdb_{endpoint}.csv'):
                 print(f'{endpoint}.csv already exists. Updating...')
             else:
-                extract_igdb_data(connection=connection, endpoint=endpoint, config_path=config_path)
+                extract_igdb_data(connection=connection, endpoint=endpoint, config=config)
                 # Pause for 1 second to avoid too many requests
                 time.sleep(1)
 
     print('Complete: IGDB data successfully updated/extracted.')
 
 
-def extract_igdb_data(connection, endpoint, fields=['*'], config_path='config.yaml'):
+def extract_igdb_data(connection, endpoint, config, fields=['*']):
     print(f"Beginning IGDB data extraction from the {endpoint} endpoint...")
-
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Specify parameters
     output_path=config['data']['igdb_raw_path']
@@ -103,5 +95,4 @@ def extract_igdb_data(connection, endpoint, fields=['*'], config_path='config.ya
 
     df.to_csv(f'{output_path}igdb_{endpoint}.csv', index=False)
     print(f'Complete: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
-
 

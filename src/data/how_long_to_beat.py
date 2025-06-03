@@ -6,7 +6,7 @@ import yaml
 
 
 def transform_library_data_for_hltb(
-    config_path="config.yaml"
+    config
 ):
     """
     Prepare the cleaned library data for HLTB querying by removing unwanted entries,
@@ -22,9 +22,6 @@ def transform_library_data_for_hltb(
     None
     """
     print("Beginning library data processing for HLTB query...")
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Files
     interm_data_path = f'{config["data"]["interm_path"]}'
@@ -60,7 +57,7 @@ def transform_library_data_for_hltb(
 
 
 def extract_hltb_data(
-    config_path="config.yaml"
+    config
 ):
     """
     Query HowLongToBeat and extract raw time-to-beat data for each game in the library.
@@ -75,9 +72,6 @@ def extract_hltb_data(
     None
     """
     print("Beginning HLTB data extraction...")
-    # Load config file
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     # Paths
     library_hltb_file = f'{config["data"]["interm_path"]}library_hltb.csv'
@@ -134,7 +128,7 @@ def extract_hltb_data(
     )
 
 
-def transform_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
+def transform_hltb_data(config, generate_report=True, verbose=True):
     """
     Execute the full processing pipeline for HowLongToBeat data integration.
 
@@ -152,9 +146,6 @@ def transform_hltb_data(config_path="config.yaml", generate_report=True, verbose
     None
     """
     print("Beginning HLTB data processing...")
-    # Load configuration
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
     interm_path = config["data"]["interm_path"]
