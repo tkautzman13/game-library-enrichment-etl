@@ -2,9 +2,8 @@ import pandas as pd
 import yaml
 
 
-def copy_raw_library_data(
-    config_path="config.yaml",
-    output_file="library_raw.csv",
+def extract_library_data(
+    config_path="config.yaml"
 ):
     """
     Reads a CSV file containing raw library data from the specified input path,
@@ -14,8 +13,6 @@ def copy_raw_library_data(
     -----------
     config_path : str
         Path to the configuration YAML file.
-    output_file : str
-        The file name for the raw data CSV.
 
     Returns:
     --------
@@ -29,22 +26,21 @@ def copy_raw_library_data(
 
     # Files
     input_file = config["data"]["library_source_file"]
-    output_path = f'{config["data"]["raw_path"]}{output_file}'
+    output_file = f'{config["data"]["raw_path"]}library_raw.csv'
 
     print('Reading source library data...')
     library_raw = pd.read_csv(input_file, skiprows=1, header=0)
+
     print('Writing raw library data...')
-    library_raw.to_csv(output_path, index=False)
+    library_raw.to_csv(output_file, index=False)
 
     print(
-        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_path}"
+        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_file}"
     )
 
 
-def clean_library_data(
+def transform_library_data(
     config_path="config.yaml",
-    input_file="library_raw.csv",
-    output_file="library_cleaned.csv",
 ):
     """
     Reads a CSV file containing library data, cleans and processes the data by:
@@ -58,10 +54,6 @@ def clean_library_data(
     -----------
     config_path : str
         Path to the configuration YAML file.
-    input_file : str
-        The file name for the input CSV file containing raw or intermediate library data.
-    output_file : str
-        The file name for the cleaned and processed CSV data.
 
     Returns:
     --------
@@ -73,11 +65,11 @@ def clean_library_data(
         config = yaml.safe_load(f)
 
     # Files
-    input_path = f'{config["data"]["raw_path"]}{input_file}'
-    output_path = f'{config["data"]["interm_path"]}{output_file}'
+    input_file = f'{config["data"]["raw_path"]}library_raw.csv'
+    output_file = f'{config["data"]["interm_path"]}library_cleaned.csv'
 
     print('Reading raw library data...')
-    library_interm = pd.read_csv(input_path)
+    library_interm = pd.read_csv(input_file)
 
     print('Filtering and cleaning library data...')
     # Column name changes
@@ -103,6 +95,6 @@ def clean_library_data(
 
     print('Writing cleaned library data...')
     # Export intermediate data
-    library_interm.to_csv(output_path, index=False)
+    library_interm.to_csv(output_file, index=False)
 
-    print(f"Complete: Library data successfully processed and stored in: {output_path}")
+    print(f"Complete: Library data successfully cleaned and stored in: {output_file}")
