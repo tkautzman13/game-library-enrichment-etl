@@ -5,11 +5,8 @@ from pathlib import Path
 import yaml
 
 
-def prepare_library_data_hltb(
-    config_path="config.yaml",
-    library_interm_file="library_cleaned.csv",
-    # hltb_interm_file="hltb_interm.csv",
-    library_hltb_file="library_hltb.csv",
+def transform_library_data_for_hltb(
+    config_path="config.yaml"
 ):
     """
     Prepare the cleaned library data for HLTB querying by removing unwanted entries,
@@ -19,10 +16,6 @@ def prepare_library_data_hltb(
     -----------
     config_path : str
         Path to the configuration YAML file.
-    library_interm_file : str
-        Name of the CSV file containing cleaned library data.
-    library_hltb_file : str
-        Output filename for the prepared library HLTB data.
 
     Returns:
     --------
@@ -33,14 +26,16 @@ def prepare_library_data_hltb(
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    print("Reading cleaned library data...")
-    # Interm path
+    # Files
     interm_data_path = f'{config["data"]["interm_path"]}'
+    library_interm_file=f'{interm_data_path}library_cleaned.csv'
+    library_hltb_file=f'{interm_data_path}library_hltb.csv'
+
+    print("Reading cleaned library data...")
+    # Import library data
+    library_prepped = pd.read_csv(library_interm_file)
 
     print("Preparing library data for HLTB query...")
-    # Import library data
-    library_prepped = pd.read_csv(interm_data_path + library_interm_file)
-
     # Filter out 'HLTB Ignore' flagged records
     library_prepped = library_prepped[
         ~library_prepped["Categories"].str.contains("HLTB Ignore", na=False)
@@ -57,15 +52,15 @@ def prepare_library_data_hltb(
 
     print("Writing prepared library HLTB data...")
     # Export prepped library_data
-    library_prepped.to_csv(interm_data_path + library_hltb_file, index=False)
+    library_prepped.to_csv(library_hltb_file, index=False)
 
     print(
-        f"Complete: Library data successfully prepared for HLTB query and stored in: {interm_data_path + library_hltb_file}"
+        f"Complete: Library data successfully prepared for HLTB query and stored in: {library_hltb_file}"
     )
 
 
-def extract_raw_hltb_data(
-    config_path="config.yaml", library_hltb_file="library_hltb.csv"
+def extract_hltb_data(
+    config_path="config.yaml"
 ):
     """
     Query HowLongToBeat and extract raw time-to-beat data for each game in the library.
@@ -74,8 +69,6 @@ def extract_raw_hltb_data(
     -----------
     config_path : str
         Path to the configuration YAML file.
-    library_hltb_file : str
-        Name of the prepared library file used for HLTB queries.
 
     Returns:
     --------
@@ -87,13 +80,13 @@ def extract_raw_hltb_data(
         config = yaml.safe_load(f)
 
     # Paths
-    library_hltb_path = f'{config["data"]["interm_path"]}{library_hltb_file}'
+    library_hltb_file = f'{config["data"]["interm_path"]}library_hltb.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
     print("Reading prepared library HLTB data...")
 
     # Import library_hltb.csv
-    library_prepped = pd.read_csv(library_hltb_path)
+    library_prepped = pd.read_csv(library_hltb_file)
 
     all_hltb_data = []
 
@@ -433,7 +426,7 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_i
     print("=" * 80)
 
 
-def process_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
+def transform_hltb_data(config_path="config.yaml", generate_report=True, verbose=True):
     """
     Execute the full processing pipeline for HowLongToBeat data integration.
 
