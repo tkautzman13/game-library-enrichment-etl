@@ -1,5 +1,4 @@
 import pandas as pd
-import yaml
 
 
 def extract_library_data(

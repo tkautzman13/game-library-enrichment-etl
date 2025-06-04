@@ -2,7 +2,6 @@ from howlongtobeatpy import HowLongToBeat, SearchModifiers
 import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
-import yaml
 
 
 def transform_library_data_for_hltb(
