@@ -2,57 +2,8 @@ from howlongtobeatpy import HowLongToBeat, SearchModifiers
 import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
+from tqdm import tqdm
 
-
-def transform_library_data_for_hltb(
-    config
-):
-    """
-    Prepare the cleaned library data for HLTB querying by removing unwanted entries,
-    cleaning punctuation, and ensuring proper date formatting.
-
-    Parameters:
-    -----------
-    config_path : str
-        Path to the configuration YAML file.
-
-    Returns:
-    --------
-    None
-    """
-    print("Beginning library data processing for HLTB query...")
-
-    # Files
-    interm_data_path = f'{config["data"]["interm_path"]}'
-    library_interm_file=f'{interm_data_path}library_cleaned.csv'
-    library_hltb_file=f'{interm_data_path}_library_hltb_prep.csv'
-
-    print("Reading cleaned library data...")
-    # Import library data
-    library_prepped = pd.read_csv(library_interm_file)
-
-    print("Preparing library data for HLTB query...")
-    # Filter out 'HLTB Ignore' flagged records
-    library_prepped = library_prepped[
-        ~library_prepped["Categories"].str.contains("HLTB Ignore", na=False)
-    ]
-
-    # Fix dashes and colons found in library_data.Name
-    replacements = {"–": "-", ":": ""}
-    library_prepped["name_no_punct"] = library_prepped["Name"].replace(
-        replacements, regex=True
-    )
-
-    # Ensure the Release Date field is a date
-    library_prepped["Release Date"] = pd.to_datetime(library_prepped["Release Date"])
-
-    print("Writing prepared library HLTB data...")
-    # Export prepped library_data
-    library_prepped.to_csv(library_hltb_file, index=False)
-
-    print(
-        f"Complete: Library data successfully prepared for HLTB query and stored in: {library_hltb_file}."
-    )
 
 
 def extract_hltb_data(
@@ -73,27 +24,34 @@ def extract_hltb_data(
     print("Beginning HLTB data extraction...")
 
     # Paths
-    library_hltb_file = f'{config["data"]["interm_path"]}_library_hltb_prep.csv'
+    library_cleaned_file = f'{config["data"]["interm_path"]}library_cleaned.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
-    print("Reading prepared library HLTB data...")
+    print("Reading prepared library data...")
 
     # Import _library_hltb_prep.csv
-    library_prepped = pd.read_csv(library_hltb_file)
+    library_prepped = pd.read_csv(library_cleaned_file)
 
     all_hltb_data = []
 
     print("Fetching HLTB data...")
     # For loop to query HLTB data
-    for index, row in library_prepped.iterrows():
+    for index, row in tqdm(library_prepped.iterrows(), total=len(library_prepped)):
+        # Prepare the search name
+        search_name = row["name_no_punct"]
+        
+        # If the name starts with 'Pokémon', remove 'Version' from it
+        if search_name.startswith('Pokémon'):
+            search_name = search_name.replace('Version', '').strip()
+        
         # Get results_list (Check if game is marked as "DLC")
         if isinstance(row["Categories"], str) and "DLC" in row["Categories"]:
             results_list = HowLongToBeat().search(
-                row["name_no_punct"], similarity_case_sensitive=False
+                search_name, similarity_case_sensitive=False
             )
         else:
             results_list = HowLongToBeat().search(
-                row["name_no_punct"],
+                search_name,
                 similarity_case_sensitive=False,
                 search_modifiers=SearchModifiers.HIDE_DLC,
             )
@@ -149,6 +107,7 @@ def transform_hltb_data(config, generate_report=True, verbose=True):
     hltb_raw_path = config["data"]["hltb_raw_path"]
     interm_path = config["data"]["interm_path"]
     hltb_interm_path = config["data"]["hltb_interm_path"]
+    library_cleaned_file = f'{interm_path}library_cleaned.csv'
 
     if verbose:
         print("Starting HLTB data processing pipeline...")
@@ -161,7 +120,7 @@ def transform_hltb_data(config, generate_report=True, verbose=True):
     # Step 2: Load and prepare library data
     if verbose:
         print("Loading prepared library data...")
-    library_hltb = load_prepared_library_data(interm_path)
+    library_hltb = pd.read_csv(library_cleaned_file)
 
     # Step 3: Filter and match HLTB data
     if verbose:
@@ -237,31 +196,6 @@ def load_latest_hltb_raw_data(path):
         raise FileNotFoundError("No CSV files found in the HLTB extracts folder.")
 
 
-def load_prepared_library_data(path):
-    """
-    Load the prepared library HLTB data and extract the release year from the release date.
-
-    Parameters:
-    -----------
-    path : str
-        Path to the folder containing intermediate data.
-
-    Returns:
-    --------
-    pd.DataFrame
-        Library data with the release year column added.
-    """
-    # Load library data
-    library_hltb = pd.read_csv(f"{path}_library_hltb_prep.csv")
-
-    # Add Library Release Dates to the library data
-    library_hltb["Library Release Year"] = pd.to_datetime(
-        library_hltb["Release Date"]
-    ).dt.year
-
-    return library_hltb
-
-
 def select_best_hltb_match(group):
     """
     Select the best match from HLTB results based on release year similarity and flag quality.
@@ -281,7 +215,6 @@ def select_best_hltb_match(group):
 
     # Multiple records - find best match
     library_year = group["Library Release Year"].iloc[0]
-    game_name = group["Name"].iloc[0]  # Game name from library data
 
     # Calculate absolute difference between HLTB release year and Library release year
     group_copy = group.copy()
