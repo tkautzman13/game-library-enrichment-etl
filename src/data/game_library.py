@@ -44,6 +44,9 @@ def transform_library_data(
     - Filtering out games categorized as 'Apps'.
     - Removing entries with missing 'Completion Status'.
     - Dropping duplicate games based on 'Name' and 'Release Date'.
+    - Filter out games with 'Ignore' flag
+    - Add name_no_punct field that removes specific punctuation (-, :)
+    - Add Library Release Year field for matching processes
     Finally, saves the cleaned data to the specified output path.
 
     Parameters:
@@ -85,6 +88,25 @@ def transform_library_data(
 
     # Drop duplicates
     library_interm = library_interm.drop_duplicates(subset=["Name", "Release Date"])
+
+    # Filter out 'HLTB Ignore' flagged records
+    library_interm = library_interm[
+        ~library_interm["Categories"].str.contains("Ignore", na=False)
+    ]
+
+    # Fix dashes and colons found in library_data.Name
+    replacements = {"–": "-", ":": ""}
+    library_interm["name_no_punct"] = library_interm["Name"].replace(
+        replacements, regex=True
+    )
+
+    # Ensure the Release Date field is a date
+    library_interm["Release Date"] = pd.to_datetime(library_interm["Release Date"])
+
+    # Add Library Release Dates to the library data
+    library_interm["Library Release Year"] = pd.to_datetime(
+        library_interm["Release Date"]
+    ).dt.year
 
     print('Writing cleaned library data...')
     # Export intermediate data
