@@ -4,6 +4,9 @@ import pandas as pd
 import json
 from igdb.wrapper import IGDBWrapper
 import time
+import pandas as pd
+from fuzzywuzzy import fuzz, process
+from tqdm import tqdm
 
 def connect_to_igdb(config):
     print('Beginning IGDB connection...')
@@ -83,7 +86,7 @@ def extract_and_update_igdb_data(connection, config):
     if test_igdb_connection(connection):
         for endpoint in endpoint_list:
             print("\n" + "=" * 60)
-            print(f"    {endpoint}")
+            print(f" {endpoint}")
             print("=" * 60)
             if os.path.isfile(f'{igdb_raw_path}igdb_{endpoint}.csv'):
                 print(f'{endpoint}.csv already exists. Collecting updates and new records...')
@@ -188,3 +191,394 @@ def extract_igdb_data_new(connection, config, endpoint):
 
         new_endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=True)
         print(f'Complete: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
+
+
+def igdb_fuzzy_match_pipeline(config, generate_report=True):
+
+    print('Beginning IGDB-Library fuzzy matching...')
+    # Load library and igdb data
+    library_cleaned=pd.read_csv(f'{config['data']['interm_path']}library_cleaned.csv')
+    igdb_games=pd.read_csv(f'{config['data']['igdb_raw_path']}igdb_games.csv', low_memory=False)
+
+    # Perform fuzzy matching
+    match_df = igdb_library_fuzzy_matching(library_df=library_cleaned, igdb_df=igdb_games, threshold=50)
+
+    # Perform deduplication (library games with multiple IGDB matches)
+    library_with_igdb_ids, igdb_data_with_library = filter_and_match_igdb_data(library_df=library_cleaned, igdb_df=igdb_games, match_df=match_df)
+
+    # If True, generate report
+    if generate_report:
+        igdb_interm_path=f'{config['data']['interm_path']}igdb_issues/'
+        create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_interm_path=igdb_interm_path)
+
+    # Append IGDB IDs to library_cleaned.csv
+    library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv')
+
+
+def igdb_library_fuzzy_matching(library_df, igdb_df, threshold=50):
+    """
+    More optimized version with pre-filtering - handles non-unique game names
+    """
+    # Change library_df index to 'Id' field
+    library_df = library_df.set_index('Id')
+    
+    # Get unique game names for fuzzy matching
+    igdb_games_unique = igdb_df['name'].dropna().unique().tolist()
+    
+    print(f"IGDB has {len(igdb_df)} total entries with {len(igdb_games_unique)} unique game names")
+    
+    matches = []
+   
+    for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
+        game_name = row['Name']
+        
+        if pd.isna(game_name):
+            matches.append({
+                'library_id': index,
+                'library_name': game_name,
+                'igdb_name': None,
+                'similarity_score': 0
+            })
+            continue
+        
+        # Pre-filter: only consider games that start with same letter
+        # This reduces the search space significantly
+        first_letter = game_name[0].lower() if game_name else ''
+        filtered_candidates = [g for g in igdb_games_unique 
+                             if g and g[0].lower() == first_letter]
+        
+        # If no candidates after filtering, use full list
+        if not filtered_candidates:
+            filtered_candidates = igdb_games_unique
+        
+        # Find best match from filtered candidates
+        best_match = process.extractOne(
+            game_name,
+            filtered_candidates,
+            scorer=fuzz.ratio
+        )
+        
+        # Check for best match and if score is greater than threshold
+        if best_match and best_match[1] >= threshold:
+            matches.append({
+                'library_id': index,
+                'library_name': game_name,
+                'igdb_name': best_match[0],
+                'similarity_score': best_match[1]
+            })
+        # Otherwise, assign None to matched_game field
+        else:
+            matches.append({
+                'library_id': index,
+                'library_name': game_name,
+                'igdb_name': None,
+                'similarity_score': best_match[1] if best_match else 0
+            })
+    
+    # Create results dataframe
+    match_df = pd.DataFrame(matches)
+
+    return match_df
+
+
+def filter_and_match_igdb_data(library_df, igdb_df, match_df):
+    # Merge with original library dataframe
+    library_df_with_matches = match_df.merge(
+        library_df.rename(columns={'Id': 'library_id'}),
+        on='library_id',
+        how='left'
+    )
+
+    # Final join with large dataframe - this will create multiple rows per match
+    # since the same game name might appear multiple times in igdb_df
+    result = library_df_with_matches.merge(
+        igdb_df,
+        left_on='igdb_name',
+        right_on='name',
+        how='left',
+        suffixes=('_library', '_igdb')
+    )
+
+    # Apply deduplication only to rows that have IGDB matches
+    matched_rows = result[result['igdb_name'].notna()].copy()
+    unmatched_rows = result[result['igdb_name'].isna()].copy()
+
+    if len(matched_rows) > 0:
+        # Group by library_id (library record) and apply selection logic
+        deduplicated_matches = matched_rows.groupby('library_id')[matched_rows.columns].apply(select_best_igdb_match).reset_index(drop=True)
+        
+        # Combine deduplicated matches with unmatched rows
+        igdb_with_library = pd.concat([deduplicated_matches, unmatched_rows], ignore_index=True)
+    else:
+        igdb_with_library = result
+
+    # Keep only library and IGDB ids
+    id_matches = igdb_with_library[['library_id', 'id']].rename(columns={'library_id': 'Id', 'id':'igdb_game_id'})
+
+    # Merge with library_df
+    library_df = library_df.merge(id_matches, on='Id')
+
+    return library_df, igdb_with_library
+
+
+def select_best_igdb_match(group):
+    """
+    Select the best IGDB match for a library game using the specified criteria
+    """
+    if len(group) == 1:
+        return group.iloc[0]
+    
+    # First, try to match by release year if available in library data
+    library_year = group.iloc[0].get('Release Year', None)  # Adjust column name as needed
+    if pd.notna(library_year):
+        # Convert library year to int for comparison
+        try:
+            library_year = int(library_year)
+            # Filter games with matching or close release years (within 1 year)
+            year_matches = group[
+                (pd.notna(group['first_release_date'])) &  # Adjust IGDB year column name
+                (abs(pd.to_datetime(group['first_release_date']).dt.year - library_year) <= 1)
+            ]
+            if len(year_matches) > 0:
+                group = year_matches
+        except (ValueError, TypeError):
+            pass  # If year conversion fails, continue with full group
+    
+    # If still multiple matches, prioritize game_type = 0 (main games)
+    if len(group) > 1:
+        main_games = group[group['category'] == 0]  # Adjust column name if different
+        if len(main_games) > 0:
+            group = main_games
+    
+    # If still multiple matches, select the one with fewest NaN fields
+    if len(group) > 1:
+        # Count NaN values for each row
+        nan_counts = group.isna().sum(axis=1)
+        # Select the row with minimum NaN count
+        best_idx = nan_counts.idxmin()
+        return group.loc[best_idx]
+    
+    return group.iloc[0]
+
+
+def create_comprehensive_igdb_matching_report(igdb_with_library, library_df, match_df, igdb_interm_path):
+    """
+    Create a comprehensive report on the quality of matches between IGDB and library data.
+
+    Parameters:
+    -----------
+    igdb_with_library : pd.DataFrame
+        IGDB data merged with library data for analysis (result from igdb_library_fuzzy_matching).
+    library_df : pd.DataFrame
+        Original library data used as reference.
+    match_df : pd.DataFrame
+        DataFrame containing match results from fuzzy matching.
+    igdb_interm_path : str
+        Path to save output report files.
+
+    Returns:
+    --------
+    None
+    """
+    year_mismatches = []
+    no_igdb_records = []
+    low_similarity_games = []
+    category_analysis = []
+
+    # Get all library games for comparison
+    all_library_games = library_df[["Id", "Name", "Release Year"]].copy() if "Release Year" in library_df.columns else library_df[["Id", "Name"]].copy()
+
+    # 1. Check for games with no IGDB records (missing from merged data)
+    merged_library_ids = set(igdb_with_library["library_id"].dropna())
+    all_library_ids = set(all_library_games["Id"])
+    missing_library_ids = all_library_ids - merged_library_ids
+
+    for library_id in missing_library_ids:
+        game_info = all_library_games[all_library_games["Id"] == library_id].iloc[0]
+        no_igdb_records.append(
+            {
+                "Library ID": library_id,
+                "Game Name": game_info["Name"],
+                "Library Year": game_info.get("Release Year", "Unknown"),
+            }
+        )
+
+    # 2. Check for low similarity scores and year mismatches
+    for library_id in igdb_with_library["library_id"].unique():
+        if pd.isna(library_id):
+            continue
+
+        group = igdb_with_library[igdb_with_library["library_id"] == library_id]
+        
+        if len(group) == 0:
+            continue
+
+        game_name = group["library_name"].iloc[0]
+        library_year = group.get("Release Year", pd.Series([None])).iloc[0] if "Release Year" in group.columns else None
+        similarity_score = group["similarity_score"].iloc[0] if "similarity_score" in group.columns else None
+
+        # Check for low similarity (games that were matched but with low confidence)
+        if pd.notna(similarity_score) and similarity_score < 95:
+            igdb_match = group["igdb_name"].iloc[0] if "igdb_name" in group.columns else "Unknown"
+            low_similarity_games.append(
+                {
+                    "Library ID": library_id,
+                    "Game Name": game_name,
+                    "Library Year": library_year,
+                    "Similarity Score": similarity_score,
+                    "IGDB Match": igdb_match,
+                }
+            )
+
+        # Check for year mismatches (only if both library and IGDB have year data)
+        if pd.notna(library_year) and "first_release_date" in group.columns:
+            igdb_release_date = group["first_release_date"].iloc[0]
+            if pd.notna(igdb_release_date):
+                try:
+                    # Convert IGDB date to year
+                    igdb_year = pd.to_datetime(igdb_release_date).year
+                    library_year_int = int(library_year)
+                    
+                    # Check if years differ by more than 1 year
+                    if abs(igdb_year - library_year_int) > 1:
+                        year_mismatches.append(
+                            {
+                                "Library ID": library_id,
+                                "Game Name": game_name,
+                                "Library Year": library_year_int,
+                                "IGDB Year": igdb_year,
+                                "Year Difference": abs(igdb_year - library_year_int),
+                                "IGDB Match": group["igdb_name"].iloc[0] if "igdb_name" in group.columns else "Unknown",
+                            }
+                        )
+                except (ValueError, TypeError):
+                    # Skip if date conversion fails
+                    pass
+
+        # Analyze game categories for matched games
+        if pd.notna(group["igdb_name"].iloc[0]) and "category" in group.columns:
+            category = group["category"].iloc[0]
+            category_name = get_igdb_category_name(category)
+            category_analysis.append(
+                {
+                    "Library ID": library_id,
+                    "Game Name": game_name,
+                    "IGDB Match": group["igdb_name"].iloc[0],
+                    "Category": category,
+                    "Category Name": category_name,
+                    "Similarity Score": similarity_score,
+                }
+            )
+
+    # Print reports
+    print("\n" + "=" * 80)
+    print("COMPREHENSIVE IGDB MATCHING REPORT")
+    print("=" * 80)
+
+    # Report 1: Games with no IGDB records
+    if no_igdb_records:
+        print(
+            f"\n❌ {len(no_igdb_records)} games in library with NO IGDB records found:"
+        )
+        print("-" * 60)
+        no_igdb_df = pd.DataFrame(no_igdb_records)
+        print(no_igdb_df.to_string(index=False))
+        no_igdb_df.to_csv(f"{igdb_interm_path}no_igdb_records.csv", index=False)
+        print(f"💾 Details saved to: {igdb_interm_path}no_igdb_records.csv")
+    else:
+        print("\n✅ All library games have IGDB records!")
+
+    # Report 2: Games with low similarity scores
+    if low_similarity_games:
+        print(f"\n⚠️  {len(low_similarity_games)} games with similarity < 95:")
+        print("-" * 60)
+        low_sim_df = pd.DataFrame(low_similarity_games)
+        print(low_sim_df.to_string(index=False))
+        low_sim_df.to_csv(f"{igdb_interm_path}low_similarity_games.csv", index=False)
+        print(f"💾 Details saved to: {igdb_interm_path}low_similarity_games.csv")
+    else:
+        print("\n✅ All matched games have similarity ≥ 95!")
+
+    # Report 3: Games with year mismatches
+    if year_mismatches:
+        print(f"\n⚠️  {len(year_mismatches)} games with release year mismatches (>1 year difference):")
+        print("-" * 60)
+        mismatch_df = pd.DataFrame(year_mismatches)
+        print(mismatch_df.to_string(index=False))
+        mismatch_df.to_csv(f"{igdb_interm_path}year_mismatches.csv", index=False)
+        print(f"💾 Details saved to: {igdb_interm_path}year_mismatches.csv")
+    else:
+        print("\n✅ No significant release year mismatches found!")
+
+    # Report 4: Category analysis for matched games
+    if category_analysis:
+        print(f"\n📊 Game category distribution for {len(category_analysis)} matched games:")
+        print("-" * 60)
+        category_df = pd.DataFrame(category_analysis)
+        category_counts = category_df["Category Name"].value_counts()
+        for category, count in category_counts.items():
+            percentage = count / len(category_analysis) * 100
+            print(f"   {category}: {count} games ({percentage:.1f}%)")
+        
+        # Save detailed category analysis
+        category_df.to_csv(f"{igdb_interm_path}category_analysis.csv", index=False)
+        print(f"💾 Detailed category analysis saved to: {igdb_interm_path}category_analysis.csv")
+
+        # Check for non-main games
+        non_main_games = category_df[category_df["Category"] != 0]
+        if len(non_main_games) > 0:
+            print(f"\n⚠️  {len(non_main_games)} matched games are not main games:")
+            print("   (Consider reviewing these matches)")
+            non_main_summary = non_main_games.groupby("Category Name").size()
+            for category, count in non_main_summary.items():
+                print(f"   - {category}: {count} games")
+
+    # Summary statistics
+    total_library_games = len(all_library_games)
+    matched_games = len(match_df[match_df["igdb_name"].notna()])
+    high_confidence_matches = len(match_df[(match_df["igdb_name"].notna()) & (match_df["similarity_score"] >= 95)])
+
+    print("\n" + "=" * 80)
+    print("📈 MATCHING SUMMARY:")
+    print(f"   Total library games: {total_library_games}")
+    print(f"   Games with IGDB matches: {matched_games} ({matched_games/total_library_games*100:.1f}%)")
+    print(f"   High confidence matches (≥95): {high_confidence_matches} ({high_confidence_matches/total_library_games*100:.1f}%)")
+    print(f"   No IGDB records: {len(no_igdb_records)}")
+    print(f"   Low similarity matches: {len(low_similarity_games)}")
+    print(f"   Year mismatches: {len(year_mismatches)}")
+    
+    # Similarity score distribution
+    if matched_games > 0:
+        print(f"\n📊 SIMILARITY SCORE DISTRIBUTION:")
+        similarity_scores = match_df[match_df["igdb_name"].notna()]["similarity_score"]
+        print(f"   Average similarity: {similarity_scores.mean():.1f}")
+        print(f"   Median similarity: {similarity_scores.median():.1f}")
+        print(f"   Min similarity: {similarity_scores.min():.1f}")
+        print(f"   Max similarity: {similarity_scores.max():.1f}")
+    
+    print("=" * 80)
+
+
+def get_igdb_category_name(category_id):
+    """
+    Convert IGDB category ID to human-readable name.
+    Based on IGDB API documentation.
+    """
+    category_map = {
+        0: "Main Game",
+        1: "DLC/Addon",
+        2: "Expansion",
+        3: "Bundle",
+        4: "Standalone Expansion",
+        5: "Mod",
+        6: "Episode",
+        7: "Season",
+        8: "Remake",
+        9: "Remaster",
+        10: "Expanded Game",
+        11: "Port",
+        12: "Fork",
+        13: "Pack",
+        14: "Update"
+    }
+    return category_map.get(category_id, f"Unknown ({category_id})")
