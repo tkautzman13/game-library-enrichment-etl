@@ -228,7 +228,8 @@ def igdb_library_fuzzy_matching(library_df, igdb_df, threshold=50):
     print(f"IGDB has {len(igdb_df)} total entries with {len(igdb_games_unique)} unique game names")
     
     matches = []
-   
+
+    print('Beginning library/IGDB fuzzy matching...')
     for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
         game_name = row['Name']
         
@@ -278,10 +279,13 @@ def igdb_library_fuzzy_matching(library_df, igdb_df, threshold=50):
     # Create results dataframe
     match_df = pd.DataFrame(matches)
 
+    print('Complete: Library/IGDB fuzzy matching has completed.')
+
     return match_df
 
 
 def filter_and_match_igdb_data(library_df, igdb_df, match_df):
+    print('Removing duplicate matches from library/IGDB fuzzy matching...')
     # Merge with original library dataframe
     library_df_with_matches = match_df.merge(
         library_df.rename(columns={'Id': 'library_id'}),
@@ -317,6 +321,8 @@ def filter_and_match_igdb_data(library_df, igdb_df, match_df):
 
     # Merge with library_df
     library_df = library_df.merge(id_matches, on='Id')
+
+    print('Complete: Duplicates removed.')
 
     return library_df, igdb_with_library
 
