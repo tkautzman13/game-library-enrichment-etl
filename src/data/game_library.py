@@ -1,9 +1,10 @@
 import pandas as pd
+from typing import Dict, Any, Optional
 
 
 def extract_library_data(
-    config: str
-)-> None:
+    config: Dict[str, Any]
+) -> None:
     """
     Reads a CSV file containing raw library data from the specified input path,
     and writes it to the specified output path without any modification.
@@ -11,7 +12,7 @@ def extract_library_data(
     Parameters:
     -----------
     config
-        Name of the configuration YAML file.
+        Configuration dictionary containing data paths and settings.
 
     Returns:
     --------
@@ -36,7 +37,7 @@ def extract_library_data(
 
 
 def transform_library_data(
-    config: str,
+    config: Dict[str, Any],
 )-> None:
     """
     Reads a CSV file containing library data, cleans and processes the data by:
@@ -52,7 +53,7 @@ def transform_library_data(
     Parameters:
     -----------
     config
-        Name of the configuration YAML file.
+        Configuration dictionary containing data paths and settings.
 
     Returns:
     --------

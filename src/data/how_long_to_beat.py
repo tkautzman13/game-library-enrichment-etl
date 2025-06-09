@@ -1,13 +1,13 @@
 from howlongtobeatpy import HowLongToBeat, SearchModifiers
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
 from typing import Dict, Any, Optional
 
 
 def extract_hltb_data(
-    config: str
+    config: Dict[str, Any]
 ) -> None:
     """
     Queries HowLongToBeat and extracts raw time-to-beat data for each game in the library.
@@ -16,7 +16,7 @@ def extract_hltb_data(
     Parameters:
     -----------
     config
-        Path to the configuration YAML file.
+        Configuration dictionary containing data paths and settings.
 
     Returns:
     --------
@@ -87,7 +87,7 @@ def extract_hltb_data(
 
 
 def transform_hltb_data(
-    config: str, 
+    config: Dict[str, Any], 
     generate_report: bool = True
 ) -> None:
     """
@@ -97,7 +97,7 @@ def transform_hltb_data(
     Parameters:
     -----------
     config
-        Path to the configuration YAML file.
+        Configuration dictionary containing data paths and settings.
     generate_report
         Whether to generate a comprehensive matching report.
 
