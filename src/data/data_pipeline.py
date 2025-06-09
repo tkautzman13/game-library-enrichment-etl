@@ -2,6 +2,7 @@ import yaml
 from data.game_library import extract_library_data, transform_library_data
 from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from data.igdb import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
+from data.playtime_history import extract_playtime_data
 
 # Config file path
 config_path = 'config.yaml'
@@ -28,3 +29,6 @@ extract_and_update_igdb_data(connection=igdb_connection, config=pipeline_config)
 
 # Perform fuzzy matching between IGDB and Library data
 igdb_fuzzy_match_pipeline(config=pipeline_config)
+
+# Collect playtime history data
+extract_playtime_data(config=pipeline_config)
