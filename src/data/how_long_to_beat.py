@@ -3,18 +3,19 @@ import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
 from tqdm import tqdm
-
+from typing import Dict, Any, Optional
 
 
 def extract_hltb_data(
-    config
-):
+    config: str
+) -> None:
     """
-    Query HowLongToBeat and extract raw time-to-beat data for each game in the library.
+    Queries HowLongToBeat and extracts raw time-to-beat data for each game in the library.
+    Saves the raw data to a timestamped CSV file.
 
     Parameters:
     -----------
-    config_path : str
+    config
         Path to the configuration YAML file.
 
     Returns:
@@ -29,14 +30,14 @@ def extract_hltb_data(
 
     print("Reading prepared library data...")
 
-    # Import _library_hltb_prep.csv
-    library_prepped = pd.read_csv(library_cleaned_file)
+    # Import _library_df_prep.csv
+    library_df = pd.read_csv(library_cleaned_file)
 
     all_hltb_data = []
 
     print("Fetching HLTB data...")
     # For loop to query HLTB data
-    for index, row in tqdm(library_prepped.iterrows(), total=len(library_prepped)):
+    for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
         # Prepare the search name
         search_name = row["name_no_punct"]
         
@@ -85,18 +86,20 @@ def extract_hltb_data(
     )
 
 
-def transform_hltb_data(config, generate_report=True, verbose=True):
+def transform_hltb_data(
+    config: str, 
+    generate_report: bool = True
+) -> None:
     """
-    Execute the full processing pipeline for HowLongToBeat data integration.
+    Executes the full processing pipeline for HowLongToBeat data integration.
+    Loads raw HLTB data, processes matches with library data, and saves cleaned results.
 
     Parameters:
     -----------
-    config_path : str
+    config
         Path to the configuration YAML file.
-    generate_report : bool
+    generate_report
         Whether to generate a comprehensive matching report.
-    verbose : bool
-        Whether to print detailed status messages during processing.
 
     Returns:
     --------
@@ -109,47 +112,42 @@ def transform_hltb_data(config, generate_report=True, verbose=True):
     hltb_interm_path = config["data"]["hltb_interm_path"]
     library_cleaned_file = f'{interm_path}library_cleaned.csv'
 
-    if verbose:
-        print("Starting HLTB data processing pipeline...")
+    print("Starting HLTB data processing pipeline...")
 
     # Step 1: Load latest HLTB data
-    if verbose:
-        print("Loading HLTB data...")
-    hltb_raw = load_latest_hltb_raw_data(hltb_raw_path)
+    print("Loading HLTB data...")
+    hltb_raw_df = load_latest_hltb_raw_data(hltb_raw_path)
 
     # Step 2: Load and prepare library data
-    if verbose:
-        print("Loading prepared library data...")
-    library_hltb = pd.read_csv(library_cleaned_file)
+    print("Loading prepared library data...")
+    library_df = pd.read_csv(library_cleaned_file)
 
     # Step 3: Filter and match HLTB data
-    if verbose:
-        print("Processing HLTB matches...")
-    hltb_processed = filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=verbose)
+    print("Processing HLTB matches...")
+    hltb_processed_df = filter_and_match_hltb_data(hltb_raw_df, library_df)
 
     # Step 4: Generate comprehensive report (optional)
-    matching_stats = None
     if generate_report:
         # Need to recreate hltb_with_library for reporting
-        hltb_filtered = hltb_raw[
-            hltb_raw["similarity"]
-            == hltb_raw.groupby(by="Library ID", as_index=False)[
+        hltb_filtered_df = hltb_raw_df[
+            hltb_raw_df["similarity"]
+            == hltb_raw_df.groupby(by="Library ID", as_index=False)[
                 "similarity"
             ].transform("max")
         ]
-        hltb_filtered = hltb_filtered[~hltb_filtered.duplicated()]
-        hltb_with_library = hltb_filtered.merge(
-            library_hltb[["Id", "Name", "Library Release Year"]],
+        hltb_filtered_df = hltb_filtered_df[~hltb_filtered_df.duplicated()]
+        hltb_with_library_df = hltb_filtered_df.merge(
+            library_df[["Id", "Name", "Library Release Year"]],
             how="right",
             left_on="Library ID",
             right_on="Id",
         )
 
-        matching_stats = create_comprehensive_matching_report(
-            hltb_with_library, library_hltb, hltb_interm_path
+        create_comprehensive_matching_report(
+            hltb_with_library_df, library_df, hltb_interm_path
         )
 
-    hltb_processed[
+    hltb_processed_df[
         [
             "Library Name",
             "Library ID",
@@ -163,19 +161,21 @@ def transform_hltb_data(config, generate_report=True, verbose=True):
         index=False,
     )
 
-    if verbose:
-        print(
-            f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv."
-        )
+    print(
+        f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv."
+    )
 
 
-def load_latest_hltb_raw_data(path):
+def load_latest_hltb_raw_data(
+    path: str
+) -> pd.DataFrame:
     """
-    Load the most recent HLTB raw data CSV file from a specified folder.
+    Loads the most recent HLTB raw data CSV file from a specified folder
+    based on file modification time.
 
     Parameters:
     -----------
-    path : str
+    path
         Path to the folder containing HLTB extract CSV files.
 
     Returns:
@@ -196,13 +196,16 @@ def load_latest_hltb_raw_data(path):
         raise FileNotFoundError("No CSV files found in the HLTB extracts folder.")
 
 
-def select_best_hltb_match(group):
+def select_best_hltb_match(
+    group: pd.DataFrame
+) -> pd.DataFrame:
     """
-    Select the best match from HLTB results based on release year similarity and flag quality.
+    Selects the best match from HLTB results based on release year similarity
+    when multiple matches exist for a single library game.
 
     Parameters:
     -----------
-    group : pd.DataFrame
+    group
         A grouped subset of HLTB data corresponding to a single Library ID.
 
     Returns:
@@ -230,23 +233,24 @@ def select_best_hltb_match(group):
         # No exact match - use closest year
         best_match_idx = group_copy["year_diff"].idxmin()
         best_match = group_copy.loc[[best_match_idx]]
-        hltb_years = group_copy["release_year"].tolist()
 
     return best_match.drop(columns=["year_diff"])
 
 
-def filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=True):
+def filter_and_match_hltb_data(
+    hltb_raw_df: pd.DataFrame, 
+    library_df: pd.DataFrame
+) -> pd.DataFrame:
     """
-    Filter and match raw HLTB data with the library, resolving duplicates using release years.
+    Filters and matches raw HLTB data with the library, resolving duplicates 
+    using release years and similarity scores.
 
     Parameters:
     -----------
-    hltb_raw : pd.DataFrame
+    hltb_raw_df
         Raw HLTB query results.
-    library_hltb : pd.DataFrame
-        Library data with release year information.
-    verbose : bool
-        Whether to print progress messages.
+    library
+        Cleaned library data.
 
     Returns:
     --------
@@ -254,54 +258,55 @@ def filter_and_match_hltb_data(hltb_raw, library_hltb, verbose=True):
         Filtered and matched HLTB data.
     """
     # Keep only hltb records that contain the maximum similarity score for each Library ID
-    hltb_filtered = hltb_raw[
-        hltb_raw["similarity"]
-        == hltb_raw.groupby(by="Library ID", as_index=False)["similarity"].transform(
+    hltb_filtered_df = hltb_raw_df[
+        hltb_raw_df["similarity"]
+        == hltb_raw_df.groupby(by="Library ID", as_index=False)["similarity"].transform(
             "max"
         )
     ]
 
     # Remove duplicate records
-    hltb_filtered = hltb_filtered[~hltb_filtered.duplicated()]
+    hltb_filtered_df = hltb_filtered_df[~hltb_filtered_df.duplicated()]
 
     # Merge with library data to get release years and names
-    hltb_with_library = hltb_filtered.merge(
-        library_hltb[["Id", "Name", "Library Release Year"]],
+    hltb_with_library_df = hltb_filtered_df.merge(
+        library_df[["Id", "Name", "Library Release Year"]],
         how="right",
         left_on="Library ID",
         right_on="Id",
     )
 
-    if verbose:
-        print("Resolving release year mismatches...")
-        print("=" * 60)
+    print("Resolving release year mismatches...")
 
     # Apply the function to each Library ID group
-    hltb_new = hltb_with_library.groupby("Library ID", group_keys=False).apply(
+    hltb_new_df = hltb_with_library_df.groupby("Library ID", group_keys=False).apply(
         select_best_hltb_match
     )
 
-    if verbose:
-        print("=" * 60)
-        print("Matching complete")
+    print("Complete: Matching complete.")
 
     # Reset index to clean up after groupby operations
-    hltb_new = hltb_new.reset_index(drop=True)
+    hltb_new_df = hltb_new_df.reset_index(drop=True)
 
-    return hltb_new
+    return hltb_new_df
 
 
-def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_interm_path):
+def create_comprehensive_matching_report(
+    hltb_with_library_df: pd.DataFrame, 
+    library_df: pd.DataFrame, 
+    hltb_interm_path: str
+) -> None:
     """
-    Create a comprehensive report on the quality of matches between HLTB and library data.
+    Creates a comprehensive report on the quality of matches between HLTB and library data.
+    Generates CSV files for games with issues and prints summary statistics.
 
     Parameters:
     -----------
-    hltb_with_library : pd.DataFrame
+    hltb_with_library_df
         HLTB data merged with library data for analysis.
-    library_hltb : pd.DataFrame
+    library_df
         Original library data used as reference.
-    hltb_interm_path : str
+    hltb_interm_path
         Path to save output report files.
 
     Returns:
@@ -313,10 +318,10 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_i
     low_similarity_games = []
 
     # Get all library games for comparison
-    all_library_games = library_hltb[["Id", "Name", "Library Release Year"]].copy()
+    all_library_games = library_df[["Id", "Name", "Library Release Year"]].copy()
 
     # 1. Check for games with no HLTB records (missing from merged data)
-    merged_library_ids = set(hltb_with_library["Library ID"].dropna())
+    merged_library_ids = set(hltb_with_library_df["Library ID"].dropna())
     all_library_ids = set(all_library_games["Id"])
     missing_library_ids = all_library_ids - merged_library_ids
 
@@ -331,11 +336,11 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_i
         )
 
     # 2. Check for low similarity scores and year mismatches
-    for library_id in hltb_with_library["Library ID"].unique():
+    for library_id in hltb_with_library_df["Library ID"].unique():
         if pd.isna(library_id):
             continue
 
-        group = hltb_with_library[hltb_with_library["Library ID"] == library_id]
+        group = hltb_with_library_df[hltb_with_library_df["Library ID"] == library_id]
 
         if len(group) == 0:
             continue
@@ -433,4 +438,3 @@ def create_comprehensive_matching_report(hltb_with_library, library_hltb, hltb_i
     print(f"   Low similarity: {len(low_similarity_games)}")
     print(f"   Year mismatches: {len(year_mismatches)}")
     print("=" * 80)
-
