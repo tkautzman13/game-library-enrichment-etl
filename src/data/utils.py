@@ -2,7 +2,20 @@ import yaml
 from pathlib import Path
 
 def load_config(config_path: str) -> dict:
-    """Load and validate configuration file."""
+    """
+    Loads and validates a YAML configuration file from the specified path.
+    Raises appropriate errors if the file is missing, empty, or invalid.
+
+    Parameters:
+    -----------
+    config_path
+        Path to the configuration YAML file.
+
+    Returns:
+    --------
+    dict
+        Dictionary containing the loaded configuration data.
+    """
     try:
         config_file = Path(config_path)
         if not config_file.exists():
