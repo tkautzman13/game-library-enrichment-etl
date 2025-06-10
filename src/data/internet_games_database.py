@@ -7,8 +7,27 @@ import time
 import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
+from typing import Dict, Any, List, Tuple, Optional, Union
 
-def connect_to_igdb(config):
+
+def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
+    """
+    Establishes a connection to the IGDB (Internet Game Database) API using OAuth2 authentication.
+    
+    Retrieves an access token from Twitch OAuth service and creates an IGDBWrapper instance
+    for making API requests to the IGDB database.
+    
+    Parameters:
+    -----------
+    config : str
+        Configuration dictionary containing IGDB API credentials with keys:
+        - 'igdb_api': dict with 'client_id' and 'client_secret'
+    
+    Returns:
+    --------
+    IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    """
     print('Beginning IGDB connection...')
 
     # Credentials for url
@@ -30,7 +49,23 @@ def connect_to_igdb(config):
         print(response.text)
 
 
-def test_igdb_connection(connection):
+def test_igdb_connection(connection: IGDBWrapper) -> bool:
+    """
+    Tests the IGDB API connection by making a simple request to verify connectivity.
+    
+    Performs a test query to the games endpoint to ensure the connection and
+    authentication are working properly.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance to test.
+    
+    Returns:
+    --------
+    bool
+        True if connection test succeeds, False otherwise.
+    """
     print('Beginning IGDB connection test...')
     try:
         connection.api_request(
@@ -44,7 +79,27 @@ def test_igdb_connection(connection):
         return False
 
 
-def execute_igdb_query(connection, endpoint, query_where=None):
+def execute_igdb_query(connection: IGDBWrapper, endpoint: str, query_where: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Executes a paginated query against a specified IGDB API endpoint.
+    
+    Retrieves all available data from an IGDB endpoint by making multiple requests
+    with pagination (500 records per request) until all data is collected.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    endpoint : str
+        IGDB API endpoint name (e.g., 'games', 'genres', 'themes').
+    query_where : Optional[str], default=None
+        Optional WHERE clause to filter the query results.
+    
+    Returns:
+    --------
+    List[Dict[str, Any]]
+        List of dictionaries containing all records from the specified endpoint.
+    """
     o=0
     data=[]
     
@@ -73,7 +128,26 @@ def execute_igdb_query(connection, endpoint, query_where=None):
     return data
 
 
-def extract_and_update_igdb_data(connection, config):
+def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]) -> None:
+    """
+    Orchestrates the extraction and updating of IGDB data for multiple endpoints.
+    
+    Manages the complete data extraction process for various IGDB endpoints,
+    performing either full data loads for new endpoints or incremental updates
+    for existing data files.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    config : Dict[str, Any]
+        Configuration dictionary containing data paths and settings with key:
+        - 'data': dict with 'igdb_raw_path' for output directory
+    
+    Returns:
+    --------
+    None
+    """
     print('Beginning IGDB extracts/updates...')
 
     # Specify parameters
@@ -103,7 +177,27 @@ def extract_and_update_igdb_data(connection, config):
     print('Complete: IGDB data successfully updated/extracted.')
 
 
-def extract_igdb_data_full(connection, endpoint, config):
+def extract_igdb_data_full(connection: IGDBWrapper, endpoint: str, config: Dict[str, Any]) -> None:
+    """
+    Performs a complete data extraction from a specified IGDB endpoint.
+    
+    Retrieves all available data from an IGDB endpoint and saves it as a CSV file.
+    Used when no existing data file is present for the endpoint.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    endpoint : str
+        IGDB API endpoint name to extract data from.
+    config : Dict[str, Any]
+        Configuration dictionary containing output path with key:
+        - 'data': dict with 'igdb_raw_path' for CSV output directory
+    
+    Returns:
+    --------
+    None
+    """
     print(f"Beginning IGDB data extraction from the {endpoint} endpoint...")
 
     # Specify parameters
@@ -121,7 +215,27 @@ def extract_igdb_data_full(connection, endpoint, config):
     print(f'Complete: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
 
 
-def update_igdb_data(connection, config, endpoint):
+def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
+    """
+    Updates existing IGDB data with recently modified records from the API.
+    
+    Reads the existing CSV file for an endpoint, identifies the most recent update
+    timestamp, and retrieves only records that have been updated since then.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    config : Dict[str, Any]
+        Configuration dictionary containing data paths with key:
+        - 'data': dict with 'igdb_raw_path' for CSV file directory
+    endpoint : str
+        IGDB API endpoint name to update data for.
+    
+    Returns:
+    --------
+    None
+    """
     print(f"Beginning IGDB updated data retrieval from the {endpoint} endpoint...")
 
     # Specify parameters
@@ -157,7 +271,27 @@ def update_igdb_data(connection, config, endpoint):
         print(f'Complete: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
-def extract_igdb_data_new(connection, config, endpoint):
+def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
+    """
+    Extracts newly created records from a specified IGDB endpoint.
+    
+    Reads the existing CSV file for an endpoint, identifies the most recent creation
+    timestamp, and retrieves only records that have been created since then.
+    
+    Parameters:
+    -----------
+    connection : IGDBWrapper
+        Authenticated IGDB wrapper instance for making API requests.
+    config : Dict[str, Any]
+        Configuration dictionary containing data paths with key:
+        - 'data': dict with 'igdb_raw_path' for CSV file directory
+    endpoint : str
+        IGDB API endpoint name to extract new data from.
+    
+    Returns:
+    --------
+    None
+    """
     print(f"Beginning IGDB created data retrieval from the {endpoint} endpoint...")
 
     # Specify parameters
@@ -193,8 +327,25 @@ def extract_igdb_data_new(connection, config, endpoint):
         print(f'Complete: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
-def igdb_fuzzy_match_pipeline(config, generate_report=True):
-
+def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = True) -> None:
+    """
+    Orchestrates the complete fuzzy matching pipeline between library and IGDB data.
+    
+    Loads library and IGDB data, performs fuzzy matching to identify corresponding
+    games, handles deduplication, and optionally generates comprehensive matching reports.
+    
+    Parameters:
+    -----------
+    config : Dict[str, Any]
+        Configuration dictionary containing data paths with key:
+        - 'data': dict with 'interm_path' and 'igdb_raw_path' for file locations
+    generate_report : bool, default=True
+        Whether to generate detailed matching quality reports.
+    
+    Returns:
+    --------
+    None
+    """
     print('Beginning IGDB-Library fuzzy matching...')
     # Load library and igdb data
     library_cleaned=pd.read_csv(f'{config['data']['interm_path']}library_cleaned.csv')
@@ -215,9 +366,27 @@ def igdb_fuzzy_match_pipeline(config, generate_report=True):
     library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv')
 
 
-def igdb_library_fuzzy_matching(library_df, igdb_df, threshold=50):
+def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame, threshold: int = 50) -> pd.DataFrame:
     """
-    More optimized version with pre-filtering - handles non-unique game names
+    Performs fuzzy string matching between library game names and IGDB game names.
+    
+    Uses optimized fuzzy matching with pre-filtering to find the best matches
+    between games in a personal library and the IGDB database based on name similarity.
+    
+    Parameters:
+    -----------
+    library_df : pd.DataFrame
+        DataFrame containing library games with 'Id' and 'Name' columns.
+    igdb_df : pd.DataFrame
+        DataFrame containing IGDB games with 'name' column.
+    threshold : int, default=50
+        Minimum similarity score (0-100) required for a match to be considered valid.
+    
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with columns: 'library_id', 'library_name', 'igdb_name', 'similarity_score'
+        containing fuzzy matching results for all library games.
     """
     # Change library_df index to 'Id' field
     library_df = library_df.set_index('Id')
@@ -284,7 +453,29 @@ def igdb_library_fuzzy_matching(library_df, igdb_df, threshold=50):
     return match_df
 
 
-def filter_and_match_igdb_data(library_df, igdb_df, match_df):
+def filter_and_match_igdb_data(library_df: pd.DataFrame, igdb_df: pd.DataFrame, match_df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Filters duplicate IGDB matches and creates final matched datasets.
+    
+    Resolves cases where a single library game matches multiple IGDB entries
+    by applying selection criteria to choose the best match, then creates
+    final datasets with IGDB IDs appended to library data.
+    
+    Parameters:
+    -----------
+    library_df : pd.DataFrame
+        Original library DataFrame with game information.
+    igdb_df : pd.DataFrame
+        Complete IGDB games DataFrame.
+    match_df : pd.DataFrame
+        Fuzzy matching results from igdb_library_fuzzy_matching function.
+    
+    Returns:
+    --------
+    Tuple[pd.DataFrame, pd.DataFrame]
+        - library_df with 'igdb_game_id' column added
+        - merged DataFrame containing both library and IGDB data for matched games
+    """
     print('Removing duplicate matches from library/IGDB fuzzy matching...')
     # Merge with original library dataframe
     library_df_with_matches = match_df.merge(
@@ -327,9 +518,22 @@ def filter_and_match_igdb_data(library_df, igdb_df, match_df):
     return library_df, igdb_with_library
 
 
-def select_best_igdb_match(group):
+def select_best_igdb_match(group: pd.DataFrame) -> pd.Series:
     """
-    Select the best IGDB match for a library game using the specified criteria
+    Selects the best IGDB match from multiple candidates for a single library game.
+    
+    Applies a hierarchical selection process: first by release year proximity,
+    then by game category (preferring main games), and finally by data completeness.
+    
+    Parameters:
+    -----------
+    group : pd.DataFrame
+        DataFrame containing multiple IGDB matches for a single library game.
+    
+    Returns:
+    --------
+    pd.Series
+        Single row representing the best IGDB match for the library game.
     """
     if len(group) == 1:
         return group.iloc[0]
@@ -367,21 +571,30 @@ def select_best_igdb_match(group):
     return group.iloc[0]
 
 
-def create_comprehensive_igdb_matching_report(igdb_with_library, library_df, match_df, igdb_interm_path):
+def create_comprehensive_igdb_matching_report(
+    igdb_with_library: pd.DataFrame, 
+    library_df: pd.DataFrame, 
+    match_df: pd.DataFrame, 
+    igdb_interm_path: str
+) -> None:
     """
-    Create a comprehensive report on the quality of matches between IGDB and library data.
-
+    Creates a comprehensive report on the quality of matches between IGDB and library data.
+    
+    Analyzes matching results to identify potential issues including missing matches,
+    low similarity scores, release year mismatches, and game category distributions.
+    Generates detailed CSV reports for manual review.
+    
     Parameters:
     -----------
     igdb_with_library : pd.DataFrame
-        IGDB data merged with library data for analysis (result from igdb_library_fuzzy_matching).
+        IGDB data merged with library data for analysis.
     library_df : pd.DataFrame
         Original library data used as reference.
     match_df : pd.DataFrame
         DataFrame containing match results from fuzzy matching.
     igdb_interm_path : str
-        Path to save output report files.
-
+        Directory path to save output report files.
+    
     Returns:
     --------
     None
@@ -565,10 +778,22 @@ def create_comprehensive_igdb_matching_report(igdb_with_library, library_df, mat
     print("=" * 80)
 
 
-def get_igdb_category_name(category_id):
+def get_igdb_category_name(
+    category_id: int
+) -> str:
     """
-    Convert IGDB category ID to human-readable name.
-    Based on IGDB API documentation.
+    Convert IGDB category ID to human-readable name based on IGDB API documentation.
+    
+    Parameters:
+    -----------
+    category_id
+        The IGDB category ID to convert to a human-readable name.
+    
+    Returns:
+    --------
+    str
+        Human-readable category name corresponding to the ID, or "Unknown (ID)" 
+        if the category ID is not recognized.
     """
     category_map = {
         0: "Main Game",
