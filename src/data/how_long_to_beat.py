@@ -15,7 +15,7 @@ def extract_hltb_data(
 
     Parameters:
     -----------
-    config
+    config : Dict[str, Any]
         Configuration dictionary containing data paths and settings.
 
     Returns:
@@ -96,9 +96,9 @@ def transform_hltb_data(
 
     Parameters:
     -----------
-    config
+    config : Dict[str, Any]
         Configuration dictionary containing data paths and settings.
-    generate_report
+    generate_report : bool
         Whether to generate a comprehensive matching report.
 
     Returns:
@@ -175,7 +175,7 @@ def load_latest_hltb_raw_data(
 
     Parameters:
     -----------
-    path
+    path : str
         Path to the folder containing HLTB extract CSV files.
 
     Returns:
@@ -205,7 +205,7 @@ def select_best_hltb_match(
 
     Parameters:
     -----------
-    group
+    group : pd.DataFrame
         A grouped subset of HLTB data corresponding to a single Library ID.
 
     Returns:
@@ -247,9 +247,9 @@ def filter_and_match_hltb_data(
 
     Parameters:
     -----------
-    hltb_raw_df
+    hltb_raw_df : pd.DataFrame
         Raw HLTB query results.
-    library
+    library_df : pd.DataFrame
         Cleaned library data.
 
     Returns:
@@ -294,7 +294,7 @@ def filter_and_match_hltb_data(
 def create_comprehensive_matching_report(
     hltb_with_library_df: pd.DataFrame, 
     library_df: pd.DataFrame, 
-    hltb_interm_path: str
+    output_path: str
 ) -> None:
     """
     Creates a comprehensive report on the quality of matches between HLTB and library data.
@@ -302,11 +302,11 @@ def create_comprehensive_matching_report(
 
     Parameters:
     -----------
-    hltb_with_library_df
+    hltb_with_library_df : pd.DataFrame
         HLTB data merged with library data for analysis.
-    library_df
+    library_df : pd.DataFrame
         Original library data used as reference.
-    hltb_interm_path
+    hltb_interm_path : str
         Path to save output report files.
 
     Returns:
@@ -395,8 +395,8 @@ def create_comprehensive_matching_report(
         print("-" * 60)
         no_hltb_df = pd.DataFrame(no_hltb_records)
         print(no_hltb_df.to_string(index=False))
-        no_hltb_df.to_csv(f"{hltb_interm_path}no_hltb_records.csv", index=False)
-        print(f"💾 Details saved to: {hltb_interm_path}no_hltb_records.csv")
+        no_hltb_df.to_csv(f"{output_path}no_hltb_records.csv", index=False)
+        print(f"💾 Details saved to: {output_path}no_hltb_records.csv")
     else:
         print("\n✅ All library games have HLTB records!")
 
@@ -406,8 +406,8 @@ def create_comprehensive_matching_report(
         print("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
         print(low_sim_df.to_string(index=False))
-        low_sim_df.to_csv(f"{hltb_interm_path}low_similarity_games.csv", index=False)
-        print(f"💾 Details saved to: {hltb_interm_path}low_similarity_games.csv")
+        low_sim_df.to_csv(f"{output_path}low_similarity_games.csv", index=False)
+        print(f"💾 Details saved to: {output_path}low_similarity_games.csv")
     else:
         print("\n✅ All matched games have similarity ≥ 0.75!")
 
@@ -417,8 +417,8 @@ def create_comprehensive_matching_report(
         print("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
         print(mismatch_df.to_string(index=False))
-        mismatch_df.to_csv(f"{hltb_interm_path}year_mismatches.csv", index=False)
-        print(f"💾 Details saved to: {hltb_interm_path}year_mismatches.csv")
+        mismatch_df.to_csv(f"{output_path}year_mismatches.csv", index=False)
+        print(f"💾 Details saved to: {output_path}year_mismatches.csv")
     else:
         print("\n✅ No release year mismatches found!")
 
