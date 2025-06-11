@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import Dict, Any, Optional
+from data.utils import get_logger
 
 
 def extract_library_data(
@@ -18,21 +19,24 @@ def extract_library_data(
     --------
     None
     """
+    logger = get_logger()
 
-    print('Beginning library source data extraction...')
+    logger.info('Beginning library source data extraction...')
 
-    # Files
+    # File paths
     input_file = config["data"]["library_source_file"]
     output_file = f'{config["data"]["raw_path"]}library_raw.csv'
 
-    print('Reading source library data...')
+    # Read library CSV data from input_file source
+    logger.debug('Reading source library data...')
     library_raw_df = pd.read_csv(input_file, skiprows=1, header=0)
 
-    print('Writing raw library data...')
+    # Write library CSV to output_file
+    logger.debug('Writing raw library data...')
     library_raw_df.to_csv(output_file, index=False)
 
-    print(
-        f"Complete: Library data successfully pulled from {input_file} and stored in: {output_file}."
+    logger.info(
+        f"COMPLETE: Library data successfully pulled from {input_file} and stored in: {output_file}"
     )
 
 
@@ -59,16 +63,18 @@ def transform_library_data(
     --------
     None
     """
-    print('Beginning library data cleaning...')
+    logger = get_logger()
 
-    # Files
+    logger.info('Beginning library data cleaning...')
+
+    # File paths
     input_file = f'{config["data"]["raw_path"]}library_raw.csv'
     output_file = f'{config["data"]["interm_path"]}library_cleaned.csv'
 
-    print('Reading raw library data...')
+    logger.debug('Reading raw library data...')
     library_interm_df = pd.read_csv(input_file)
 
-    print('Filtering and cleaning library data...')
+    logger.debug('Filtering and cleaning library data...')
     # Column name changes
     library_interm_df = library_interm_df.rename(
         columns={"CompletionStatus": "Completion Status", "ReleaseDate": "Release Date"}
@@ -109,8 +115,8 @@ def transform_library_data(
         library_interm_df["Release Date"]
     ).dt.year
 
-    print('Writing cleaned library data...')
+    logger.debug('Writing cleaned library data...')
     # Export intermediate data
     library_interm_df.to_csv(output_file, index=False)
 
-    print(f"Complete: Library data successfully cleaned and stored in: {output_file}.")
+    logger.info(f"COMPLETE: Library data successfully cleaned and stored in: {output_file}")

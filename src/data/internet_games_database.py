@@ -8,6 +8,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 from typing import Dict, Any, List, Tuple, Optional, Union
+from data.utils import get_logger
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
@@ -28,25 +29,32 @@ def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
     IGDBWrapper
         Authenticated IGDB wrapper instance for making API requests.
     """
-    print('Beginning IGDB connection...')
+    logger = get_logger()
 
-    # Credentials for url
-    client_id = config['igdb_api']['client_id']
-    client_secret = config['igdb_api']['client_secret']
-    grant_type = 'client_credentials'
+    logger.info('Beginning IGDB connection...')
 
-    # POST request
-    url = f'https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type={grant_type}'
-    response = requests.post(url)
-    if response.status_code == 200:
-        # Get access token
+    try:
+        client_id = config['igdb_api']['client_id']
+        client_secret = config['igdb_api']['client_secret']
+        grant_type = 'client_credentials'
+
+        url = f'https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type={grant_type}'
+        response = requests.post(url, timeout=30)
+        
+        # Use raise_for_status() to convert HTTP errors to exceptions
+        response.raise_for_status()
+        
         token = response.json().get('access_token')
-        print('Connection successful, accesss token received.')
-        connection = IGDBWrapper(client_id, token)
-        return connection
-    else:
-        print(f"Failed to get token: {response.status_code}")
-        print(response.text)
+        if not token:
+            logger.error("Access token not found in response")
+            raise ValueError("Access token not found in response")
+        
+        logger.info('Connection successful, access token received')
+        return IGDBWrapper(client_id, token)
+            
+    except Exception as e:
+        logger.error(f"Error connecting to IGDB: {e}")
+        raise
 
 
 def test_igdb_connection(connection: IGDBWrapper) -> bool:
@@ -66,16 +74,23 @@ def test_igdb_connection(connection: IGDBWrapper) -> bool:
     bool
         True if connection test succeeds, False otherwise.
     """
-    print('Beginning IGDB connection test...')
+    logger = get_logger()
+
+    logger.info('Beginning IGDB connection test...')
     try:
-        connection.api_request(
+        response = connection.api_request(
             'games',
-            'fields name; limit 10;'
+            'fields name; limit 1;'
         )
-        print('Connection test succeeded!')
-        return True
+        # Optional: validate the response has expected structure
+        if response:
+            logger.info('Connection test succeeded!')
+            return True
+        else:
+            logger.warning('Connection test returned empty response')
+            return False
     except Exception as err:
-        print(f"Error occurred during test request: {err}")
+        logger.error(f"IGDB connection test failed: {err}")
         return False
 
 
@@ -100,32 +115,39 @@ def execute_igdb_query(connection: IGDBWrapper, endpoint: str, query_where: Opti
     List[Dict[str, Any]]
         List of dictionaries containing all records from the specified endpoint.
     """
+    logger = get_logger()
+
     o=0
     data=[]
     
-    # Fetch data
-    while True:
-        if query_where:
-            json_results = connection.api_request(
-                f'{endpoint}',
-                f'fields *; limit 500; offset {o};{query_where}'
-            )
-        else:
-            json_results = connection.api_request(
-                f'{endpoint}',
-                f'fields *; limit 500; offset {o};'
-            )            
+    try:
+        # Fetch data
+        while True:
+            if query_where:
+                json_results = connection.api_request(
+                    f'{endpoint}',
+                    f'fields *; limit 500; offset {o};{query_where}'
+                )
+            else:
+                json_results = connection.api_request(
+                    f'{endpoint}',
+                    f'fields *; limit 500; offset {o};'
+                )            
 
-        json_load = json.loads(json_results)
+            json_load = json.loads(json_results)
 
-        data.extend(json_load)
+            data.extend(json_load)
 
-        o += 500
+            o += 500
 
-        if len(json_load) < 500:
-            break
+            if len(json_load) < 500:
+                break
 
-    return data
+        return data
+    
+    except Exception as e:
+        logger.error('Error fetching IGDB data: {e}')
+        raise
 
 
 def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]) -> None:
@@ -148,7 +170,9 @@ def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]
     --------
     None
     """
-    print('Beginning IGDB extracts/updates...')
+    logger = get_logger()
+
+    logger.info('Beginning IGDB extracts/updates...')
 
     # Specify parameters
     igdb_raw_path = config['data']['igdb_raw_path']
@@ -159,22 +183,22 @@ def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]
     # Test IGDB Connection before running
     if test_igdb_connection(connection):
         for endpoint in endpoint_list:
-            print("\n" + "=" * 60)
-            print(f" {endpoint}")
-            print("=" * 60)
+            logger.info("\n" + "=" * 60)
+            logger.info(f" {endpoint}")
+            logger.info("=" * 60)
             if os.path.isfile(f'{igdb_raw_path}igdb_{endpoint}.csv'):
-                print(f'{endpoint}.csv already exists. Collecting updates and new records...')
+                logger.info(f'{endpoint}.csv already exists. Collecting updates and new records...')
                 extract_igdb_data_new(connection=connection, endpoint=endpoint, config=config)
                 time.sleep(0.5)
                 update_igdb_data(connection=connection, endpoint=endpoint, config=config)
                 time.sleep(0.5)
             else:
-                print(f'{endpoint}.csv does not exist. Performing full data load...')
+                logger.info(f'{endpoint}.csv does not exist. Performing full data load...')
                 extract_igdb_data_full(connection=connection, endpoint=endpoint, config=config)
                 # Pause for 1 second to avoid too many requests
                 time.sleep(0.5)
 
-    print('Complete: IGDB data successfully updated/extracted.')
+    logger.info('COMPLETE: IGDB data successfully updated/extracted')
 
 
 def extract_igdb_data_full(connection: IGDBWrapper, endpoint: str, config: Dict[str, Any]) -> None:
@@ -198,21 +222,23 @@ def extract_igdb_data_full(connection: IGDBWrapper, endpoint: str, config: Dict[
     --------
     None
     """
-    print(f"Beginning IGDB data extraction from the {endpoint} endpoint...")
+    logger = get_logger()
+
+    logger.info(f"Beginning IGDB data extraction from the {endpoint} endpoint...")
 
     # Specify parameters
     output_path=config['data']['igdb_raw_path']
 
-    print(f'Fetching data from {endpoint} endpoint...')
+    logger.debug(f'Fetching data from {endpoint} endpoint...')
     # Fetch games data
     data = execute_igdb_query(connection=connection, endpoint=endpoint)
 
-    print(f'{len(data)} rows successfully retrieved from {endpoint}.')
+    logger.info(f'{len(data)} rows successfully retrieved from {endpoint}')
 
     df = pd.DataFrame(data)
 
     df.to_csv(f'{output_path}igdb_{endpoint}.csv', index=False)
-    print(f'Complete: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
+    logger.info(f'COMPLETE: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
 
 
 def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
@@ -236,39 +262,41 @@ def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: 
     --------
     None
     """
-    print(f"Beginning IGDB updated data retrieval from the {endpoint} endpoint...")
+    logger = get_logger()
+
+    logger.info(f"Beginning IGDB updated data retrieval from the {endpoint} endpoint...")
 
     # Specify parameters
     igdb_raw_path = config['data']['igdb_raw_path']
     csv_path=f'{igdb_raw_path}igdb_{endpoint}.csv'
 
     # Read endpoint CSV and collect max update and created timestamps
-    print(f'Loading {endpoint}.csv...')
+    logger.debug(f'Loading {endpoint}.csv...')
     endpoint_df = pd.read_csv(csv_path, low_memory=False).set_index('id')
     max_update_ts = endpoint_df['updated_at'].max()
     query_where = f'where updated_at > {max_update_ts};'
 
-    print(f'Fetching updates from {endpoint} endpoint...')
+    logger.debug(f'Fetching updates from {endpoint} endpoint...')
     # Fetch updated data
     update_data = execute_igdb_query(connection=connection, endpoint=endpoint, query_where=query_where)
 
     # Check for new rows
     if len(update_data) == 0:
-        print('No updated rows retrieved. File not updated.')
+        logger.info('No updated rows retrieved. File not updated.')
     else:
-        print(f'{len(update_data)} updated rows successfully retrieved from {endpoint}.')
+        logger.info(f'{len(update_data)} updated rows successfully retrieved from {endpoint}')
 
         # Setup new dataframes
         update_df = pd.DataFrame(update_data).set_index('id')
 
-        print(f'Updating {endpoint} data...')
+        logger.debug(f'Updating {endpoint} data...')
         # Update endpoint dataframe using update_df
         endpoint_df.update(update_df)
 
         endpoint_df.reset_index(inplace=True)
 
         endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=False)
-        print(f'Complete: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
+        logger.info(f'COMPLETE: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
 def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
@@ -292,27 +320,29 @@ def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpo
     --------
     None
     """
-    print(f"Beginning IGDB created data retrieval from the {endpoint} endpoint...")
+    logger = get_logger()
+
+    logger.info(f"Beginning IGDB created data retrieval from the {endpoint} endpoint...")
 
     # Specify parameters
     igdb_raw_path = config['data']['igdb_raw_path']
     csv_path=f'{igdb_raw_path}igdb_{endpoint}.csv'
 
     # Read endpoint CSV and collect max update and created timestamps
-    print(f'Loading {endpoint}.csv...')
+    logger.debug(f'Loading {endpoint}.csv...')
     endpoint_df = pd.read_csv(csv_path, low_memory=False).set_index('id')
     max_create_ts = endpoint_df['created_at'].max()
     query_where = f'where created_at > {max_create_ts};'
 
-    print(f'Fetching new data from {endpoint} endpoint...')
+    logger.debug(f'Fetching new data from {endpoint} endpoint...')
     # Fetch new data
     new_data = execute_igdb_query(connection=connection, endpoint=endpoint, query_where=query_where)
 
     # Check for new rows
     if len(new_data) == 0:
-        print('No new rows retrieved. File not updated.')
+        logger.info('No new rows retrieved. File not updated.')
     else:
-        print(f'{len(new_data)} new rows successfully retrieved from {endpoint}.')
+        logger.info(f'{len(new_data)} new rows successfully retrieved from {endpoint}')
 
         new_df = pd.DataFrame(new_data).set_index('id')
 
@@ -324,7 +354,7 @@ def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpo
         new_endpoint_df = pd.concat([endpoint_df, new_df]).reset_index()
 
         new_endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=True)
-        print(f'Complete: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
+        logger.info(f'COMPLETE: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
 def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = True) -> None:
@@ -346,7 +376,9 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
     --------
     None
     """
-    print('Beginning IGDB-Library fuzzy matching...')
+    logger = get_logger()
+
+    logger.info('Beginning IGDB-Library fuzzy matching...')
     # Load library and igdb data
     library_cleaned=pd.read_csv(f'{config['data']['interm_path']}library_cleaned.csv')
     igdb_games=pd.read_csv(f'{config['data']['igdb_raw_path']}igdb_games.csv', low_memory=False)
@@ -364,6 +396,10 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
 
     # Append IGDB IDs to library_cleaned.csv
     library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv')
+
+    logger.info(
+        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {library_cleaned}"
+    )
 
 
 def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame, threshold: int = 50) -> pd.DataFrame:
@@ -388,17 +424,19 @@ def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame,
         DataFrame with columns: 'library_id', 'library_name', 'igdb_name', 'similarity_score'
         containing fuzzy matching results for all library games.
     """
+    logger = get_logger()
+
     # Change library_df index to 'Id' field
     library_df = library_df.set_index('Id')
     
     # Get unique game names for fuzzy matching
     igdb_games_unique = igdb_df['name'].dropna().unique().tolist()
     
-    print(f"IGDB has {len(igdb_df)} total entries with {len(igdb_games_unique)} unique game names")
+    logger.debug(f"IGDB has {len(igdb_df)} total entries with {len(igdb_games_unique)} unique game names")
     
     matches = []
 
-    print('Beginning library/IGDB fuzzy matching...')
+    logger.info('Beginning library/IGDB fuzzy matching...')
     for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
         game_name = row['Name']
         
@@ -448,7 +486,7 @@ def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame,
     # Create results dataframe
     match_df = pd.DataFrame(matches)
 
-    print('Complete: Library/IGDB fuzzy matching has completed.')
+    logger.info('COMPLETE: Library/IGDB fuzzy matching has completed')
 
     return match_df
 
@@ -476,7 +514,9 @@ def filter_and_match_igdb_data(library_df: pd.DataFrame, igdb_df: pd.DataFrame, 
         - library_df with 'igdb_game_id' column added
         - merged DataFrame containing both library and IGDB data for matched games
     """
-    print('Removing duplicate matches from library/IGDB fuzzy matching...')
+    logger = get_logger()
+
+    logger.debug('Removing duplicate matches from library/IGDB fuzzy matching...')
     # Merge with original library dataframe
     library_df_with_matches = match_df.merge(
         library_df.rename(columns={'Id': 'library_id'}),
@@ -513,7 +553,7 @@ def filter_and_match_igdb_data(library_df: pd.DataFrame, igdb_df: pd.DataFrame, 
     # Merge with library_df
     library_df = library_df.merge(id_matches, on='Id')
 
-    print('Complete: Duplicates removed.')
+    logger.debug('COMPLETE: Duplicates removed')
 
     return library_df, igdb_with_library
 
@@ -599,6 +639,8 @@ def create_comprehensive_igdb_matching_report(
     --------
     None
     """
+    logger = get_logger()
+
     year_mismatches = []
     no_igdb_records = []
     low_similarity_games = []
@@ -690,92 +732,92 @@ def create_comprehensive_igdb_matching_report(
             )
 
     # Print reports
-    print("\n" + "=" * 80)
-    print("COMPREHENSIVE IGDB MATCHING REPORT")
-    print("=" * 80)
+    logger.info("\n" + "=" * 80)
+    logger.info("COMPREHENSIVE IGDB MATCHING REPORT")
+    logger.info("=" * 80)
 
     # Report 1: Games with no IGDB records
     if no_igdb_records:
-        print(
-            f"\n❌ {len(no_igdb_records)} games in library with NO IGDB records found:"
+        logger.info(
+            f"\n {len(no_igdb_records)} games in library with NO IGDB records found:"
         )
-        print("-" * 60)
+        logger.info("-" * 60)
         no_igdb_df = pd.DataFrame(no_igdb_records)
-        print(no_igdb_df.to_string(index=False))
+        logger.info(no_igdb_df.to_string(index=False))
         no_igdb_df.to_csv(f"{igdb_interm_path}no_igdb_records.csv", index=False)
-        print(f"💾 Details saved to: {igdb_interm_path}no_igdb_records.csv")
+        logger.info(f" Details saved to: {igdb_interm_path}no_igdb_records.csv")
     else:
-        print("\n✅ All library games have IGDB records!")
+        logger.info("\n All library games have IGDB records!")
 
     # Report 2: Games with low similarity scores
     if low_similarity_games:
-        print(f"\n⚠️  {len(low_similarity_games)} games with similarity < 95:")
-        print("-" * 60)
+        logger.info(f"\n  {len(low_similarity_games)} games with similarity < 95:")
+        logger.info("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
-        print(low_sim_df.to_string(index=False))
+        logger.info(low_sim_df.to_string(index=False))
         low_sim_df.to_csv(f"{igdb_interm_path}low_similarity_games.csv", index=False)
-        print(f"💾 Details saved to: {igdb_interm_path}low_similarity_games.csv")
+        logger.info(f" Details saved to: {igdb_interm_path}low_similarity_games.csv")
     else:
-        print("\n✅ All matched games have similarity ≥ 95!")
+        logger.info("\n All matched games have similarity ≥ 95!")
 
     # Report 3: Games with year mismatches
     if year_mismatches:
-        print(f"\n⚠️  {len(year_mismatches)} games with release year mismatches (>1 year difference):")
-        print("-" * 60)
+        logger.info(f"\n  {len(year_mismatches)} games with release year mismatches (>1 year difference):")
+        logger.info("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
-        print(mismatch_df.to_string(index=False))
+        logger.info(mismatch_df.to_string(index=False))
         mismatch_df.to_csv(f"{igdb_interm_path}year_mismatches.csv", index=False)
-        print(f"💾 Details saved to: {igdb_interm_path}year_mismatches.csv")
+        logger.info(f" Details saved to: {igdb_interm_path}year_mismatches.csv")
     else:
-        print("\n✅ No significant release year mismatches found!")
+        logger.info("\n No significant release year mismatches found!")
 
     # Report 4: Category analysis for matched games
     if category_analysis:
-        print(f"\n📊 Game category distribution for {len(category_analysis)} matched games:")
-        print("-" * 60)
+        logger.info(f"\n Game category distribution for {len(category_analysis)} matched games:")
+        logger.info("-" * 60)
         category_df = pd.DataFrame(category_analysis)
         category_counts = category_df["Category Name"].value_counts()
         for category, count in category_counts.items():
             percentage = count / len(category_analysis) * 100
-            print(f"   {category}: {count} games ({percentage:.1f}%)")
+            logger.info(f"   {category}: {count} games ({percentage:.1f}%)")
         
         # Save detailed category analysis
         category_df.to_csv(f"{igdb_interm_path}category_analysis.csv", index=False)
-        print(f"💾 Detailed category analysis saved to: {igdb_interm_path}category_analysis.csv")
+        logger.info(f" Detailed category analysis saved to: {igdb_interm_path}category_analysis.csv")
 
         # Check for non-main games
         non_main_games = category_df[category_df["Category"] != 0]
         if len(non_main_games) > 0:
-            print(f"\n⚠️  {len(non_main_games)} matched games are not main games:")
-            print("   (Consider reviewing these matches)")
+            logger.info(f"\n  {len(non_main_games)} matched games are not main games:")
+            logger.info("   (Consider reviewing these matches)")
             non_main_summary = non_main_games.groupby("Category Name").size()
             for category, count in non_main_summary.items():
-                print(f"   - {category}: {count} games")
+                logger.info(f"   - {category}: {count} games")
 
     # Summary statistics
     total_library_games = len(all_library_games)
     matched_games = len(match_df[match_df["igdb_name"].notna()])
     high_confidence_matches = len(match_df[(match_df["igdb_name"].notna()) & (match_df["similarity_score"] >= 95)])
 
-    print("\n" + "=" * 80)
-    print("📈 MATCHING SUMMARY:")
-    print(f"   Total library games: {total_library_games}")
-    print(f"   Games with IGDB matches: {matched_games} ({matched_games/total_library_games*100:.1f}%)")
-    print(f"   High confidence matches (≥95): {high_confidence_matches} ({high_confidence_matches/total_library_games*100:.1f}%)")
-    print(f"   No IGDB records: {len(no_igdb_records)}")
-    print(f"   Low similarity matches: {len(low_similarity_games)}")
-    print(f"   Year mismatches: {len(year_mismatches)}")
+    logger.info("\n" + "=" * 80)
+    logger.info(" MATCHING SUMMARY:")
+    logger.info(f"   Total library games: {total_library_games}")
+    logger.info(f"   Games with IGDB matches: {matched_games} ({matched_games/total_library_games*100:.1f}%)")
+    logger.info(f"   High confidence matches (≥95): {high_confidence_matches} ({high_confidence_matches/total_library_games*100:.1f}%)")
+    logger.info(f"   No IGDB records: {len(no_igdb_records)}")
+    logger.info(f"   Low similarity matches: {len(low_similarity_games)}")
+    logger.info(f"   Year mismatches: {len(year_mismatches)}")
     
     # Similarity score distribution
     if matched_games > 0:
-        print(f"\n📊 SIMILARITY SCORE DISTRIBUTION:")
+        logger.info(f"\n SIMILARITY SCORE DISTRIBUTION:")
         similarity_scores = match_df[match_df["igdb_name"].notna()]["similarity_score"]
-        print(f"   Average similarity: {similarity_scores.mean():.1f}")
-        print(f"   Median similarity: {similarity_scores.median():.1f}")
-        print(f"   Min similarity: {similarity_scores.min():.1f}")
-        print(f"   Max similarity: {similarity_scores.max():.1f}")
+        logger.info(f"   Average similarity: {similarity_scores.mean():.1f}")
+        logger.info(f"   Median similarity: {similarity_scores.median():.1f}")
+        logger.info(f"   Min similarity: {similarity_scores.min():.1f}")
+        logger.info(f"   Max similarity: {similarity_scores.max():.1f}")
     
-    print("=" * 80)
+    logger.info("=" * 80)
 
 
 def get_igdb_category_name(

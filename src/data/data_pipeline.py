@@ -1,4 +1,4 @@
-from data.utils import load_config, parse_data_pipeline_args
+from data.utils import load_config, parse_data_pipeline_args, setup_logger
 from data.game_library import extract_library_data, transform_library_data
 from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from data.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
@@ -11,22 +11,24 @@ def run_data_pipeline(
         playtime=True,
         config_file='config.yaml'
 ):
+    logger = setup_logger()
+    logger.info('Beginning data pipeline')
+
     try:
         pipeline_config = load_config(config_file)
-        print('Beginning data pipeline.')
 
         if library:
-            print("\n" + "=" * 120)
-            print(' LIBRARY')
-            print("=" * 120)
+            logger.info("\n" + "=" * 120)
+            logger.info(' LIBRARY')
+            logger.info("=" * 120)
             # Collect game library data and transform
             extract_library_data(config=pipeline_config)
             transform_library_data(config=pipeline_config)
 
         if hltb:
-            print("\n" + "=" * 120)
-            print(' HOWLONGTOBEAT')
-            print("=" * 120)
+            logger.info("\n" + "=" * 120)
+            logger.info(' HOWLONGTOBEAT')
+            logger.info("=" * 120)
             # Collect HLTB playtime data
             extract_hltb_data(config=pipeline_config)
 
@@ -34,9 +36,9 @@ def run_data_pipeline(
             transform_hltb_data(config=pipeline_config)
 
         if igdb:
-            print("\n" + "=" * 120)
-            print(' IGDB')
-            print("=" * 120)
+            logger.info("\n" + "=" * 120)
+            logger.info(' IGDB')
+            logger.info("=" * 120)
             # Establish IGDB Connection
             igdb_connection = connect_to_igdb(config=pipeline_config)
 
@@ -47,16 +49,16 @@ def run_data_pipeline(
             igdb_fuzzy_match_pipeline(config=pipeline_config)
 
         if playtime:
-            print("\n" + "=" * 120)
-            print(' PLAYTIME')
-            print("=" * 120)
+            logger.info("\n" + "=" * 120)
+            logger.info(' PLAYTIME')
+            logger.info("=" * 120)
             # Collect playtime history data
             extract_playtime_data(config=pipeline_config)
 
-        print('Complete: Data pipeline has finished.')
+        logger.info('COMPLETE: Data pipeline has finished')
     
     except Exception as e:
-        print(f'Pipeline failed: {e}')
+         logger.error(f'Pipeline failed with error: {e}')
 
 
 if __name__ == '__main__':

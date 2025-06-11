@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
 from typing import Dict, Any, Optional
+from data.utils import get_logger
 
 
 def extract_hltb_data(
@@ -22,20 +23,22 @@ def extract_hltb_data(
     --------
     None
     """
-    print("Beginning HLTB data extraction...")
+    logger = get_logger()
 
-    # Paths
+    logger.info("Beginning HLTB data extraction...")
+
+    # File Paths
     library_cleaned_file = f'{config["data"]["interm_path"]}library_cleaned.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
-    print("Reading prepared library data...")
+    logger.debug("Reading prepared library data...")
 
     # Import _library_df_prep.csv
     library_df = pd.read_csv(library_cleaned_file)
 
     all_hltb_data = []
 
-    print("Fetching HLTB data...")
+    logger.info("Fetching HLTB data...")
     # For loop to query HLTB data
     for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
         # Prepare the search name
@@ -74,15 +77,15 @@ def extract_hltb_data(
     # Create DataFrame once from all collected data
     hltb_raw_df = pd.DataFrame(all_hltb_data)
 
-    print("HLTB data successfully extracted.")
+    logger.info("HLTB data successfully extracted")
 
-    print("Writing raw HLTB data...")
+    logger.debug("Writing raw HLTB data...")
     # Output hltb_raw dataset
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
 
-    print(
-        f"Complete: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv."
+    logger.info(
+        f"COMPLETE: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv"
     )
 
 
@@ -105,25 +108,25 @@ def transform_hltb_data(
     --------
     None
     """
-    print("Beginning HLTB data processing...")
+    logger = get_logger()
+    
+    logger.info("Beginning HLTB data processing...")
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
     interm_path = config["data"]["interm_path"]
     hltb_interm_path = config["data"]["hltb_interm_path"]
     library_cleaned_file = f'{interm_path}library_cleaned.csv'
 
-    print("Starting HLTB data processing pipeline...")
-
     # Step 1: Load latest HLTB data
-    print("Loading HLTB data...")
+    logger.debug("Loading HLTB data...")
     hltb_raw_df = load_latest_hltb_raw_data(hltb_raw_path)
 
     # Step 2: Load and prepare library data
-    print("Loading prepared library data...")
+    logger.debug("Loading prepared library data...")
     library_df = pd.read_csv(library_cleaned_file)
 
     # Step 3: Filter and match HLTB data
-    print("Processing HLTB matches...")
+    logger.debug("Processing HLTB matches...")
     hltb_processed_df = filter_and_match_hltb_data(hltb_raw_df, library_df)
 
     # Step 4: Generate comprehensive report (optional)
@@ -161,8 +164,8 @@ def transform_hltb_data(
         index=False,
     )
 
-    print(
-        f"Complete: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv."
+    logger.info(
+        f"COMPLETE: HLTB data successfully processed and stored in: {interm_path}hltb_cleaned.csv"
     )
 
 
@@ -183,6 +186,8 @@ def load_latest_hltb_raw_data(
     pd.DataFrame
         The most recently created HLTB raw data.
     """
+    logger = get_logger()
+
     # List all CSV files in the folder
     csv_files = list(Path(path).glob("*.csv"))
 
@@ -190,7 +195,7 @@ def load_latest_hltb_raw_data(
     if csv_files:
         most_recent_file = max(csv_files, key=lambda f: f.stat().st_mtime)
         hltb_raw = pd.read_csv(most_recent_file)
-        print(f"Loaded most recent file: {most_recent_file.name}")
+        logger.debug(f"Loaded most recent file: {most_recent_file.name}")
         return hltb_raw
     else:
         raise FileNotFoundError("No CSV files found in the HLTB extracts folder.")
@@ -213,6 +218,8 @@ def select_best_hltb_match(
     pd.DataFrame
         The best-matching record(s) for the given Library ID group.
     """
+    logger = get_logger()
+
     if len(group) == 1:
         return group
 
@@ -257,6 +264,8 @@ def filter_and_match_hltb_data(
     pd.DataFrame
         Filtered and matched HLTB data.
     """
+    logger = get_logger()
+
     # Keep only hltb records that contain the maximum similarity score for each Library ID
     hltb_filtered_df = hltb_raw_df[
         hltb_raw_df["similarity"]
@@ -276,14 +285,14 @@ def filter_and_match_hltb_data(
         right_on="Id",
     )
 
-    print("Resolving release year mismatches...")
+    logger.debug("Resolving release year mismatches...")
 
     # Apply the function to each Library ID group
     hltb_new_df = hltb_with_library_df.groupby("Library ID", group_keys=False).apply(
         select_best_hltb_match
     )
 
-    print("Complete: Matching complete.")
+    logger.debug("COMPLETE: Matching complete.")
 
     # Reset index to clean up after groupby operations
     hltb_new_df = hltb_new_df.reset_index(drop=True)
@@ -313,6 +322,8 @@ def create_comprehensive_matching_report(
     --------
     None
     """
+    logger = get_logger()
+
     year_mismatches = []
     no_hltb_records = []
     low_similarity_games = []
@@ -383,44 +394,44 @@ def create_comprehensive_matching_report(
                 )
 
     # Print reports
-    print("\n" + "=" * 80)
-    print("📊 COMPREHENSIVE MATCHING REPORT")
-    print("=" * 80)
+    logger.info("\n" + "=" * 80)
+    logger.info("COMPREHENSIVE MATCHING REPORT")
+    logger.info("=" * 80)
 
     # Report 1: Games with no HLTB records
     if no_hltb_records:
-        print(
-            f"\n❌ {len(no_hltb_records)} games in library with NO HLTB records found:"
+        logger.info(
+            f"\n {len(no_hltb_records)} games in library with NO HLTB records found:"
         )
-        print("-" * 60)
+        logger.info("-" * 60)
         no_hltb_df = pd.DataFrame(no_hltb_records)
-        print(no_hltb_df.to_string(index=False))
+        logger.info(no_hltb_df.to_string(index=False))
         no_hltb_df.to_csv(f"{output_path}no_hltb_records.csv", index=False)
-        print(f"💾 Details saved to: {output_path}no_hltb_records.csv")
+        logger.info(f"Details saved to: {output_path}no_hltb_records.csv")
     else:
-        print("\n✅ All library games have HLTB records!")
+        logger.info("\n All library games have HLTB records!")
 
     # Report 2: Games with low similarity scores
     if low_similarity_games:
-        print(f"\n⚠️  {len(low_similarity_games)} games with similarity < 0.75:")
-        print("-" * 60)
+        logger.info(f"\n {len(low_similarity_games)} games with similarity < 0.75:")
+        logger.info("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
-        print(low_sim_df.to_string(index=False))
+        logger.info(low_sim_df.to_string(index=False))
         low_sim_df.to_csv(f"{output_path}low_similarity_games.csv", index=False)
-        print(f"💾 Details saved to: {output_path}low_similarity_games.csv")
+        logger.info(f"Details saved to: {output_path}low_similarity_games.csv")
     else:
-        print("\n✅ All matched games have similarity ≥ 0.75!")
+        logger.info("\n All matched games have similarity ≥ 0.75!")
 
     # Report 3: Games with year mismatches
     if year_mismatches:
-        print(f"\n⚠️  {len(year_mismatches)} games with release year mismatches:")
-        print("-" * 60)
+        logger.info(f"\n {len(year_mismatches)} games with release year mismatches:")
+        logger.info("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
-        print(mismatch_df.to_string(index=False))
+        logger.info(mismatch_df.to_string(index=False))
         mismatch_df.to_csv(f"{output_path}year_mismatches.csv", index=False)
-        print(f"💾 Details saved to: {output_path}year_mismatches.csv")
+        logger.info(f"Details saved to: {output_path}year_mismatches.csv")
     else:
-        print("\n✅ No release year mismatches found!")
+        logger.info("\n No release year mismatches found!")
 
     # Summary statistics
     total_library_games = len(all_library_games)
@@ -428,13 +439,13 @@ def create_comprehensive_matching_report(
         total_library_games - len(no_hltb_records) - len(low_similarity_games)
     )
 
-    print("\n" + "=" * 80)
-    print("📈 MATCHING SUMMARY:")
-    print(f"   Total library games: {total_library_games}")
-    print(
+    logger.info("\n" + "=" * 80)
+    logger.info("MATCHING SUMMARY:")
+    logger.info(f"   Total library games: {total_library_games}")
+    logger.info(
         f"   Successful matches: {successful_matches} ({successful_matches/total_library_games*100:.1f}%)"
     )
-    print(f"   No HLTB records: {len(no_hltb_records)}")
-    print(f"   Low similarity: {len(low_similarity_games)}")
-    print(f"   Year mismatches: {len(year_mismatches)}")
-    print("=" * 80)
+    logger.info(f"   No HLTB records: {len(no_hltb_records)}")
+    logger.info(f"   Low similarity: {len(low_similarity_games)}")
+    logger.info(f"   Year mismatches: {len(year_mismatches)}")
+    logger.info("=" * 80)

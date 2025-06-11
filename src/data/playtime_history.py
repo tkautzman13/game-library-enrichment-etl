@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import Dict, Any, Optional
+from data.utils import get_logger
 
 def extract_playtime_data(
     config: Dict[str, Any]
@@ -17,18 +18,21 @@ def extract_playtime_data(
     --------
     None
     """
+    logger = get_logger()
 
-    print('Beginning playtime source data extraction...')
+    logger.info('Beginning playtime source data extraction...')
 
-    # Files
+    # File paths
     input_file = config["data"]["playtime_source_file"]
     output_file = f'{config["data"]["raw_path"]}playtime_raw.csv'
 
+    # Read playtime data from input_file path
     playtime_raw_df = pd.read_csv(input_file, encoding='latin1')
 
-    print('Writing raw playtime data...')
+    # Load playtime data to output_file
+    logger.debug('Writing raw playtime data...')
     playtime_raw_df.to_csv(output_file, index=False)
 
-    print(
-        f"Complete: playtime data successfully pulled from {input_file} and stored in: {output_file}."
+    logger.info(
+        f"COMPLETE: playtime data successfully pulled from {input_file} and stored in: {output_file}"
     )
