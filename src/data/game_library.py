@@ -45,7 +45,7 @@ def transform_library_data(
 )-> None:
     """
     Reads a CSV file containing library data, cleans and processes the data by:
-    - Removing platform tags (e.g., '(Xbox)', '(Game Pass)', etc.) from game names.
+    - Removing platform suffixes (e.g., '(Xbox)', '(Game Pass)', etc.) from game names.
     - Filtering out games categorized as 'Apps'.
     - Removing entries with missing 'Completion Status'.
     - Dropping duplicate games based on 'Name' and 'Release Date'.
@@ -81,11 +81,11 @@ def transform_library_data(
     )
 
     # Remove (Xbox), (Game Pass), (Switch), (PlayStation) tags from game names
-    tags = {" (Xbox)", " (Game Pass)", " (Switch)", " (PlayStation)"}
+    suffixes = {" (Xbox)", " (Game Pass)", " (Switch)", " (PlayStation)"}
     replacement = ""
 
-    for tag in tags:
-        library_interm_df["Name"] = library_interm_df["Name"].str.replace(tag, replacement)
+    for suffix in suffixes:
+        library_interm_df["Name"] = library_interm_df["Name"].str.replace(suffix, replacement)
 
     # Exclude 'Apps' Category games (ie GamePass)
     library_interm_df = library_interm_df[~library_interm_df["Categories"].str.contains("Apps", na=False)]

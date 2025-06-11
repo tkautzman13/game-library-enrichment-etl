@@ -5,6 +5,7 @@
 /notebooks/data/
 /notebooks/models/
 /venv/
+/logs/
 __pycache__/
 
 

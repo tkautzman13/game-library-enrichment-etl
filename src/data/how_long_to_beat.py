@@ -394,44 +394,53 @@ def create_comprehensive_matching_report(
                 )
 
     # Print reports
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("COMPREHENSIVE MATCHING REPORT")
     logger.info("=" * 80)
 
     # Report 1: Games with no HLTB records
     if no_hltb_records:
         logger.info(
-            f"\n {len(no_hltb_records)} games in library with NO HLTB records found:"
+            f"{len(no_hltb_records)} games in library with NO HLTB records found:"
         )
         logger.info("-" * 60)
         no_hltb_df = pd.DataFrame(no_hltb_records)
-        logger.info(no_hltb_df.to_string(index=False))
+        no_hltb_df_str = no_hltb_df.to_string(index=False)
+        for line in no_hltb_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         no_hltb_df.to_csv(f"{output_path}no_hltb_records.csv", index=False)
         logger.info(f"Details saved to: {output_path}no_hltb_records.csv")
     else:
-        logger.info("\n All library games have HLTB records!")
+        logger.info("All library games have HLTB records!")
 
     # Report 2: Games with low similarity scores
     if low_similarity_games:
-        logger.info(f"\n {len(low_similarity_games)} games with similarity < 0.75:")
+        logger.info(f"{len(low_similarity_games)} games with similarity < 0.75:")
         logger.info("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
-        logger.info(low_sim_df.to_string(index=False))
+        low_sim_df_str = low_sim_df.to_string(index=False)
+        for line in low_sim_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         low_sim_df.to_csv(f"{output_path}low_similarity_games.csv", index=False)
         logger.info(f"Details saved to: {output_path}low_similarity_games.csv")
     else:
-        logger.info("\n All matched games have similarity ≥ 0.75!")
+        logger.info("All matched games have similarity >= 0.75!")
 
     # Report 3: Games with year mismatches
     if year_mismatches:
-        logger.info(f"\n {len(year_mismatches)} games with release year mismatches:")
+        logger.info(f"{len(year_mismatches)} games with release year mismatches:")
         logger.info("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
-        logger.info(mismatch_df.to_string(index=False))
+        mismatch_df_str = mismatch_df.to_string(index=False)
+        for line in mismatch_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         mismatch_df.to_csv(f"{output_path}year_mismatches.csv", index=False)
         logger.info(f"Details saved to: {output_path}year_mismatches.csv")
     else:
-        logger.info("\n No release year mismatches found!")
+        logger.info("No release year mismatches found!")
 
     # Summary statistics
     total_library_games = len(all_library_games)
@@ -439,7 +448,7 @@ def create_comprehensive_matching_report(
         total_library_games - len(no_hltb_records) - len(low_similarity_games)
     )
 
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("MATCHING SUMMARY:")
     logger.info(f"   Total library games: {total_library_games}")
     logger.info(

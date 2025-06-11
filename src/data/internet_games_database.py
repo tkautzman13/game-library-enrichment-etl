@@ -183,7 +183,7 @@ def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]
     # Test IGDB Connection before running
     if test_igdb_connection(connection):
         for endpoint in endpoint_list:
-            logger.info("\n" + "=" * 60)
+            logger.info("=" * 60)
             logger.info(f" {endpoint}")
             logger.info("=" * 60)
             if os.path.isfile(f'{igdb_raw_path}igdb_{endpoint}.csv'):
@@ -398,7 +398,7 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
     library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv')
 
     logger.info(
-        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {library_cleaned}"
+        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['interm_path']}library_cleaned.csv"
     )
 
 
@@ -732,48 +732,57 @@ def create_comprehensive_igdb_matching_report(
             )
 
     # Print reports
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("COMPREHENSIVE IGDB MATCHING REPORT")
     logger.info("=" * 80)
 
     # Report 1: Games with no IGDB records
     if no_igdb_records:
         logger.info(
-            f"\n {len(no_igdb_records)} games in library with NO IGDB records found:"
+            f"{len(no_igdb_records)} games in library with NO IGDB records found:"
         )
         logger.info("-" * 60)
         no_igdb_df = pd.DataFrame(no_igdb_records)
-        logger.info(no_igdb_df.to_string(index=False))
+        no_igdb_df_str = no_igdb_df.to_string(index=False)
+        for line in no_igdb_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         no_igdb_df.to_csv(f"{igdb_interm_path}no_igdb_records.csv", index=False)
         logger.info(f" Details saved to: {igdb_interm_path}no_igdb_records.csv")
     else:
-        logger.info("\n All library games have IGDB records!")
+        logger.info("All library games have IGDB records!")
 
     # Report 2: Games with low similarity scores
     if low_similarity_games:
-        logger.info(f"\n  {len(low_similarity_games)} games with similarity < 95:")
+        logger.info(f"{len(low_similarity_games)} games with similarity < 95:")
         logger.info("-" * 60)
         low_sim_df = pd.DataFrame(low_similarity_games)
-        logger.info(low_sim_df.to_string(index=False))
+        low_sim_df_str = low_sim_df.to_string(index=False)
+        for line in low_sim_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         low_sim_df.to_csv(f"{igdb_interm_path}low_similarity_games.csv", index=False)
         logger.info(f" Details saved to: {igdb_interm_path}low_similarity_games.csv")
     else:
-        logger.info("\n All matched games have similarity ≥ 95!")
+        logger.info("All matched games have similarity >= 95!")
 
     # Report 3: Games with year mismatches
     if year_mismatches:
-        logger.info(f"\n  {len(year_mismatches)} games with release year mismatches (>1 year difference):")
+        logger.info(f"{len(year_mismatches)} games with release year mismatches (>1 year difference):")
         logger.info("-" * 60)
         mismatch_df = pd.DataFrame(year_mismatches)
-        logger.info(mismatch_df.to_string(index=False))
+        mismatch_df_str = mismatch_df.to_string(index=False)
+        for line in mismatch_df_str.split('\n'):
+            logger.info(line)
+        logger.info("-" * 60)
         mismatch_df.to_csv(f"{igdb_interm_path}year_mismatches.csv", index=False)
         logger.info(f" Details saved to: {igdb_interm_path}year_mismatches.csv")
     else:
-        logger.info("\n No significant release year mismatches found!")
+        logger.info("No significant release year mismatches found!")
 
     # Report 4: Category analysis for matched games
     if category_analysis:
-        logger.info(f"\n Game category distribution for {len(category_analysis)} matched games:")
+        logger.info(f"Game category distribution for {len(category_analysis)} matched games:")
         logger.info("-" * 60)
         category_df = pd.DataFrame(category_analysis)
         category_counts = category_df["Category Name"].value_counts()
@@ -788,7 +797,7 @@ def create_comprehensive_igdb_matching_report(
         # Check for non-main games
         non_main_games = category_df[category_df["Category"] != 0]
         if len(non_main_games) > 0:
-            logger.info(f"\n  {len(non_main_games)} matched games are not main games:")
+            logger.info(f"{len(non_main_games)} matched games are not main games:")
             logger.info("   (Consider reviewing these matches)")
             non_main_summary = non_main_games.groupby("Category Name").size()
             for category, count in non_main_summary.items():
@@ -799,23 +808,14 @@ def create_comprehensive_igdb_matching_report(
     matched_games = len(match_df[match_df["igdb_name"].notna()])
     high_confidence_matches = len(match_df[(match_df["igdb_name"].notna()) & (match_df["similarity_score"] >= 95)])
 
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info(" MATCHING SUMMARY:")
     logger.info(f"   Total library games: {total_library_games}")
     logger.info(f"   Games with IGDB matches: {matched_games} ({matched_games/total_library_games*100:.1f}%)")
-    logger.info(f"   High confidence matches (≥95): {high_confidence_matches} ({high_confidence_matches/total_library_games*100:.1f}%)")
+    logger.info(f"   High confidence matches (>=95): {high_confidence_matches} ({high_confidence_matches/total_library_games*100:.1f}%)")
     logger.info(f"   No IGDB records: {len(no_igdb_records)}")
     logger.info(f"   Low similarity matches: {len(low_similarity_games)}")
     logger.info(f"   Year mismatches: {len(year_mismatches)}")
-    
-    # Similarity score distribution
-    if matched_games > 0:
-        logger.info(f"\n SIMILARITY SCORE DISTRIBUTION:")
-        similarity_scores = match_df[match_df["igdb_name"].notna()]["similarity_score"]
-        logger.info(f"   Average similarity: {similarity_scores.mean():.1f}")
-        logger.info(f"   Median similarity: {similarity_scores.median():.1f}")
-        logger.info(f"   Min similarity: {similarity_scores.min():.1f}")
-        logger.info(f"   Max similarity: {similarity_scores.max():.1f}")
     
     logger.info("=" * 80)
 

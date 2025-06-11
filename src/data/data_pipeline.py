@@ -1,4 +1,4 @@
-from data.utils import load_config, parse_data_pipeline_args, setup_logger
+from data.utils import load_config, parse_args, setup_logger
 from data.game_library import extract_library_data, transform_library_data
 from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from data.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
@@ -18,7 +18,7 @@ def run_data_pipeline(
         pipeline_config = load_config(config_file)
 
         if library:
-            logger.info("\n" + "=" * 120)
+            logger.info("=" * 120)
             logger.info(' LIBRARY')
             logger.info("=" * 120)
             # Collect game library data and transform
@@ -26,7 +26,7 @@ def run_data_pipeline(
             transform_library_data(config=pipeline_config)
 
         if hltb:
-            logger.info("\n" + "=" * 120)
+            logger.info("=" * 120)
             logger.info(' HOWLONGTOBEAT')
             logger.info("=" * 120)
             # Collect HLTB playtime data
@@ -36,7 +36,7 @@ def run_data_pipeline(
             transform_hltb_data(config=pipeline_config)
 
         if igdb:
-            logger.info("\n" + "=" * 120)
+            logger.info("=" * 120)
             logger.info(' IGDB')
             logger.info("=" * 120)
             # Establish IGDB Connection
@@ -49,7 +49,7 @@ def run_data_pipeline(
             igdb_fuzzy_match_pipeline(config=pipeline_config)
 
         if playtime:
-            logger.info("\n" + "=" * 120)
+            logger.info("=" * 120)
             logger.info(' PLAYTIME')
             logger.info("=" * 120)
             # Collect playtime history data
@@ -62,7 +62,7 @@ def run_data_pipeline(
 
 
 if __name__ == '__main__':
-    args = parse_data_pipeline_args()
+    args = parse_args()
     
     run_data_pipeline(
         library=args.library,

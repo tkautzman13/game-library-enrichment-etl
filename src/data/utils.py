@@ -117,7 +117,7 @@ def setup_logger(name: str = "data_pipeline", log_level: int = logging.INFO, log
     
     # Create formatters
     detailed_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     simple_formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s'
