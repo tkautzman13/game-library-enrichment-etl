@@ -1,5 +1,4 @@
-import argparse
-from data.utils import load_config
+from data.utils import load_config, parse_data_pipeline_args
 from data.game_library import extract_library_data, transform_library_data
 from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from data.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
@@ -60,48 +59,8 @@ def run_data_pipeline(
         print(f'Pipeline failed: {e}')
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Run the data pipeline with configurable components')
-    
-    # Add arguments for each pipeline component
-    parser.add_argument('--library', action='store_true', default=False,
-                       help='Run the library data pipeline (default: False)')
-    parser.add_argument('--hltb', action='store_true', default=False,
-                       help='Run the HowLongToBeat data pipeline (default: False)')
-    parser.add_argument('--igdb', action='store_true', default=False,
-                       help='Run the IGDB data pipeline (default: False)')
-    parser.add_argument('--playtime', action='store_true', default=False,
-                       help='Run the playtime history pipeline (default: False)')
-    
-    # Special flag to run all components (maintains backward compatibility)
-    parser.add_argument('--all', action='store_true', default=False,
-                       help='Run all pipeline components')
-    
-    # Config file argument
-    parser.add_argument('--config', type=str, default='config.yaml',
-                       help='Path to config file (default: config.yaml)')
-    
-    args = parser.parse_args()
-    
-    # If --all is specified, set all components to True
-    if args.all:
-        args.library = True
-        args.hltb = True
-        args.igdb = True
-        args.playtime = True
-    
-    # If no specific components are selected and --all is not used, run all by default
-    if not any([args.library, args.hltb, args.igdb, args.playtime]):
-        args.library = True
-        args.hltb = True
-        args.igdb = True
-        args.playtime = True
-    
-    return args
-
-
 if __name__ == '__main__':
-    args = parse_args()
+    args = parse_data_pipeline_args()
     
     run_data_pipeline(
         library=args.library,
