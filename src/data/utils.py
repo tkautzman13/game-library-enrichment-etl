@@ -4,6 +4,8 @@ import argparse
 import logging
 import os
 from datetime import datetime
+from typing import Iterable
+
 
 def load_config(config_path: str) -> dict:
     """
@@ -20,6 +22,8 @@ def load_config(config_path: str) -> dict:
     dict
         Dictionary containing the loaded configuration data.
     """
+    logger = get_logger()
+
     try:
         config_file = Path(config_path)
         if not config_file.exists():
@@ -33,8 +37,29 @@ def load_config(config_path: str) -> dict:
         
         return config
     except Exception as e:
-        print(f"Failed to load config: {e}")
+        logger.error(f"Failed to load config: {e}")
         raise
+
+
+def ensure_directories_exist(paths: Iterable[str]) -> None:
+    """
+    Ensures that each directory in the given iterable exists.
+    If a directory does not exist, it will be created.
+
+    Args:
+        paths (Iterable[str]): A collection of directory path strings to check and create if necessary.
+
+    Returns:
+        None
+    """
+    logger = get_logger()
+
+    for path in paths:
+        if not os.path.exists(path):
+            os.makedirs(path)
+            logger.info(f"Created directory: {path}")
+        else:
+            logger.debug(f"Directory already exists: {path}")
 
 
 def parse_args():
@@ -71,6 +96,10 @@ def parse_args():
     # Config file argument
     parser.add_argument('--config', type=str, default='config.yaml',
                        help='Path to config file (default: config.yaml)')
+    
+    # Skip IGDB API argument (for test runs using sample data)
+    parser.add_argument('--skip_igdb_api', action='store_true', default=False,
+                    help='Skip IGDB API connection and data extract (for testing and sample runs)')
     
     args = parser.parse_args()
     

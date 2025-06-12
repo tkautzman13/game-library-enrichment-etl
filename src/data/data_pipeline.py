@@ -1,4 +1,4 @@
-from data.utils import load_config, parse_args, setup_logger
+from data.utils import load_config, parse_args, setup_logger, ensure_directories_exist
 from data.game_library import extract_library_data, transform_library_data
 from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from data.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
@@ -8,6 +8,7 @@ def run_data_pipeline(
         library=True,
         hltb=True,
         igdb=True,
+        skip_igdb_api=False,
         playtime=True,
         config_file='config.yaml'
 ):
@@ -15,7 +16,16 @@ def run_data_pipeline(
     logger.info('Beginning data pipeline')
 
     try:
+        # Load config file
         pipeline_config = load_config(config_file)
+
+        # Ensure directories found in config exist
+        directories = [
+            value for key, value in pipeline_config['data'].items()
+            if isinstance(value, str) and value.endswith('/')
+        ]
+
+        ensure_directories_exist(directories)
 
         if library:
             logger.info("=" * 120)
@@ -39,11 +49,12 @@ def run_data_pipeline(
             logger.info("=" * 120)
             logger.info(' IGDB')
             logger.info("=" * 120)
-            # Establish IGDB Connection
-            igdb_connection = connect_to_igdb(config=pipeline_config)
+            if not skip_igdb_api:
+                # Establish IGDB Connection
+                igdb_connection = connect_to_igdb(config=pipeline_config)
 
-            # Extract/Update IGDB Data
-            extract_and_update_igdb_data(connection=igdb_connection, config=pipeline_config)
+                # Extract/Update IGDB Data
+                extract_and_update_igdb_data(connection=igdb_connection, config=pipeline_config)
 
             # Perform fuzzy matching between IGDB and Library data
             igdb_fuzzy_match_pipeline(config=pipeline_config)
@@ -68,6 +79,7 @@ if __name__ == '__main__':
         library=args.library,
         hltb=args.hltb,
         igdb=args.igdb,
+        skip_igdb_api=args.skip_igdb,
         playtime=args.playtime,
         config_file=args.config
     )
