@@ -353,7 +353,7 @@ def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpo
         # Append endpoint df with new records
         new_endpoint_df = pd.concat([endpoint_df, new_df]).reset_index()
 
-        new_endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=True)
+        new_endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=False)
         logger.info(f'COMPLETE: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
@@ -383,6 +383,9 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
     library_cleaned=pd.read_csv(f'{config['data']['interm_path']}library_cleaned.csv')
     igdb_games=pd.read_csv(f'{config['data']['igdb_raw_path']}igdb_games.csv', low_memory=False)
 
+    # Drop igdb_id field from library_cleaned if exists
+    library_cleaned.drop(columns='igdb_game_id', inplace=True, errors='ignore')
+
     # Perform fuzzy matching
     match_df = igdb_library_fuzzy_matching(library_df=library_cleaned, igdb_df=igdb_games, threshold=50)
 
@@ -391,11 +394,11 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
 
     # If True, generate report
     if generate_report:
-        igdb_interm_path=f'{config['data']['interm_path']}igdb_issues/'
-        create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_interm_path=igdb_interm_path)
+        igdb_issues_report_path=f'{config['data']['igdb_issues_report_path']}'
+        create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_issues_report_path=igdb_issues_report_path)
 
     # Append IGDB IDs to library_cleaned.csv
-    library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv')
+    library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv', index=False)
 
     logger.info(
         f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['interm_path']}library_cleaned.csv"
@@ -615,7 +618,7 @@ def create_comprehensive_igdb_matching_report(
     igdb_with_library: pd.DataFrame, 
     library_df: pd.DataFrame, 
     match_df: pd.DataFrame, 
-    igdb_interm_path: str
+    igdb_issues_report_path: str
 ) -> None:
     """
     Creates a comprehensive report on the quality of matches between IGDB and library data.
@@ -632,7 +635,7 @@ def create_comprehensive_igdb_matching_report(
         Original library data used as reference.
     match_df : pd.DataFrame
         DataFrame containing match results from fuzzy matching.
-    igdb_interm_path : str
+    igdb_issues_report_path : str
         Directory path to save output report files.
     
     Returns:
@@ -747,8 +750,8 @@ def create_comprehensive_igdb_matching_report(
         for line in no_igdb_df_str.split('\n'):
             logger.info(line)
         logger.info("-" * 60)
-        no_igdb_df.to_csv(f"{igdb_interm_path}no_igdb_records.csv", index=False)
-        logger.info(f" Details saved to: {igdb_interm_path}no_igdb_records.csv")
+        no_igdb_df.to_csv(f"{igdb_issues_report_path}no_igdb_records.csv", index=False)
+        logger.info(f" Details saved to: {igdb_issues_report_path}no_igdb_records.csv")
     else:
         logger.info("All library games have IGDB records!")
 
@@ -761,8 +764,8 @@ def create_comprehensive_igdb_matching_report(
         for line in low_sim_df_str.split('\n'):
             logger.info(line)
         logger.info("-" * 60)
-        low_sim_df.to_csv(f"{igdb_interm_path}low_similarity_games.csv", index=False)
-        logger.info(f" Details saved to: {igdb_interm_path}low_similarity_games.csv")
+        low_sim_df.to_csv(f"{igdb_issues_report_path}low_similarity_games.csv", index=False)
+        logger.info(f" Details saved to: {igdb_issues_report_path}low_similarity_games.csv")
     else:
         logger.info("All matched games have similarity >= 95!")
 
@@ -775,8 +778,8 @@ def create_comprehensive_igdb_matching_report(
         for line in mismatch_df_str.split('\n'):
             logger.info(line)
         logger.info("-" * 60)
-        mismatch_df.to_csv(f"{igdb_interm_path}year_mismatches.csv", index=False)
-        logger.info(f" Details saved to: {igdb_interm_path}year_mismatches.csv")
+        mismatch_df.to_csv(f"{igdb_issues_report_path}year_mismatches.csv", index=False)
+        logger.info(f" Details saved to: {igdb_issues_report_path}year_mismatches.csv")
     else:
         logger.info("No significant release year mismatches found!")
 
@@ -791,8 +794,8 @@ def create_comprehensive_igdb_matching_report(
             logger.info(f"   {category}: {count} games ({percentage:.1f}%)")
         
         # Save detailed category analysis
-        category_df.to_csv(f"{igdb_interm_path}category_analysis.csv", index=False)
-        logger.info(f" Detailed category analysis saved to: {igdb_interm_path}category_analysis.csv")
+        category_df.to_csv(f"{igdb_issues_report_path}category_analysis.csv", index=False)
+        logger.info(f" Detailed category analysis saved to: {igdb_issues_report_path}category_analysis.csv")
 
         # Check for non-main games
         non_main_games = category_df[category_df["Category"] != 0]

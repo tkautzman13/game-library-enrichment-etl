@@ -114,7 +114,7 @@ def transform_hltb_data(
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
     interm_path = config["data"]["interm_path"]
-    hltb_interm_path = config["data"]["hltb_interm_path"]
+    hltb_issues_report_path = config["data"]["hltb_issues_report_path"]
     library_cleaned_file = f'{interm_path}library_cleaned.csv'
 
     # Step 1: Load latest HLTB data
@@ -147,7 +147,7 @@ def transform_hltb_data(
         )
 
         create_comprehensive_matching_report(
-            hltb_with_library_df, library_df, hltb_interm_path
+            hltb_with_library_df, library_df, hltb_issues_report_path
         )
 
     hltb_processed_df[
@@ -315,7 +315,7 @@ def create_comprehensive_matching_report(
         HLTB data merged with library data for analysis.
     library_df : pd.DataFrame
         Original library data used as reference.
-    hltb_interm_path : str
+    hltb_issues_report_path : str
         Path to save output report files.
 
     Returns:
