@@ -49,7 +49,7 @@ def transform_library_data(
     - Filtering out games categorized as 'Apps'.
     - Removing entries with missing 'Completion Status'.
     - Dropping duplicate games based on 'Name' and 'Release Date'.
-    - Filter out games with 'Ignore' flag
+    - Filter out games with 'Ignore' category
     - Add name_no_punct field that removes specific punctuation (-, :)
     - Add Library Release Year field for matching processes
     Finally, saves the cleaned data to the specified output path.
@@ -80,7 +80,7 @@ def transform_library_data(
         columns={"CompletionStatus": "Completion Status", "ReleaseDate": "Release Date"}
     )
 
-    # Remove (Xbox), (Game Pass), (Switch), (PlayStation) tags from game names
+    # Remove (Xbox), (Game Pass), (Switch), (PlayStation) suffix from game names
     suffixes = {" (Xbox)", " (Game Pass)", " (Switch)", " (PlayStation)"}
     replacement = ""
 
@@ -116,6 +116,7 @@ def transform_library_data(
     ).dt.year
 
     logger.debug('Writing cleaned library data...')
+    
     # Export intermediate data
     library_interm_df.to_csv(output_file, index=False)
 
