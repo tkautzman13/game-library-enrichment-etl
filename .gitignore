@@ -1,7 +1,11 @@
 *.yaml
 *.env
 /.vscode/
-/data/
+/data/raw/*
+/data/interm/*
+/data/test/interm/*
+data/test/raw/*
+/data/processed/*
 /notebooks/data/
 /notebooks/models/
 /venv/
@@ -10,3 +14,8 @@ __pycache__/
 
 
 !/src/data
+!/data/raw
+!/data/interm
+!/data/processed
+!/data/test/interm
+!/data/test/raw/igdb
