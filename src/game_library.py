@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Dict, Any, Optional
-from data.utils import get_logger
+from utils import get_logger
 
 
 def extract_library_data(
@@ -69,7 +69,7 @@ def transform_library_data(
 
     # File paths
     input_file = f'{config["data"]["raw_path"]}library_raw.csv'
-    output_file = f'{config["data"]["interm_path"]}library_cleaned.csv'
+    output_file = f'{config["data"]["processed_path"]}library_cleaned.csv'
 
     logger.debug('Reading raw library data...')
     library_interm_df = pd.read_csv(input_file)

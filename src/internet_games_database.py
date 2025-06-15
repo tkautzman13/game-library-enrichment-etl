@@ -8,7 +8,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 from typing import Dict, Any, List, Tuple, Optional, Union
-from data.utils import get_logger
+from utils import get_logger
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
@@ -368,7 +368,7 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
     -----------
     config : Dict[str, Any]
         Configuration dictionary containing data paths with key:
-        - 'data': dict with 'interm_path' and 'igdb_raw_path' for file locations
+        - 'data': dict with 'processed_path' and 'igdb_raw_path' for file locations
     generate_report : bool, default=True
         Whether to generate detailed matching quality reports.
     
@@ -380,7 +380,7 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
 
     logger.info('Beginning IGDB-Library fuzzy matching...')
     # Load library and igdb data
-    library_cleaned=pd.read_csv(f'{config['data']['interm_path']}library_cleaned.csv')
+    library_cleaned=pd.read_csv(f'{config['data']['processed_path']}library_cleaned.csv')
     igdb_games=pd.read_csv(f'{config['data']['igdb_raw_path']}igdb_games.csv', low_memory=False)
 
     # Drop igdb_id field from library_cleaned if exists
@@ -398,10 +398,10 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
         create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_issues_report_path=igdb_issues_report_path)
 
     # Append IGDB IDs to library_cleaned.csv
-    library_with_igdb_ids.to_csv(f'{config['data']['interm_path']}library_cleaned.csv', index=False)
+    library_with_igdb_ids.to_csv(f'{config['data']['processed_path']}library_cleaned.csv', index=False)
 
     logger.info(
-        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['interm_path']}library_cleaned.csv"
+        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['processed_path']}library_cleaned.csv"
     )
 
 

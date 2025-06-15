@@ -1,8 +1,8 @@
-from data.utils import load_config, parse_args, setup_logger, ensure_directories_exist
-from data.game_library import extract_library_data, transform_library_data
-from data.how_long_to_beat import extract_hltb_data, transform_hltb_data
-from data.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
-from data.playtime_history import extract_playtime_data
+from src.utils import load_config, parse_args, setup_logger, ensure_directories_exist
+from src.game_library import extract_library_data, transform_library_data
+from src.how_long_to_beat import extract_hltb_data, transform_hltb_data
+from src.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
+from src.playtime_history import extract_playtime_data
 
 def run_data_pipeline(
         library=True,

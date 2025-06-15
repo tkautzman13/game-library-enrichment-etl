@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Dict, Any, Optional
-from data.utils import get_logger
+from utils import get_logger
 
 def extract_playtime_data(
     config: Dict[str, Any]
