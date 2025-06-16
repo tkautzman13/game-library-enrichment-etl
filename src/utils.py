@@ -132,6 +132,16 @@ def setup_logger(name: str = "data_pipeline", log_level: int = logging.INFO, log
     Returns:
         logging.Logger: Configured logger instance
     """
+    # Get current date
+    current_date = datetime.now()
+
+    # Extract date components
+    year = current_date.strftime("%Y")
+    month = current_date.strftime("%m")
+    day = current_date.strftime("%d")
+
+    log_dir = Path(log_dir) / year / month / day
+    
     # Create logs directory if it doesn't exist
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -153,7 +163,7 @@ def setup_logger(name: str = "data_pipeline", log_level: int = logging.INFO, log
     )
     
     # File handler - with timestamp in filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = current_date.strftime("%Y%m%d_%H%M%S")
     log_filename = f"{name}_{timestamp}.log"
     log_filepath = os.path.join(log_dir, log_filename)
     

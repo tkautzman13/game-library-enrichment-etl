@@ -3,8 +3,9 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from utils import get_logger
+import os 
 
 
 def extract_hltb_data(
@@ -81,7 +82,21 @@ def extract_hltb_data(
 
     logger.debug("Writing raw HLTB data...")
     # Output hltb_raw dataset
-    current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    # Get current date
+    current_date = datetime.now()
+    current_datetime = current_date.strftime("%Y-%m-%d_%H-%M-%S")
+
+    # Extract date components
+    year = current_date.strftime("%Y")
+    month = current_date.strftime("%m")
+    day = current_date.strftime("%d")
+
+    hltb_raw_path = Path(hltb_raw_path) / year / month / day
+
+    # Create  directory if it doesn't exist
+    if not os.path.exists(hltb_raw_path):
+        os.makedirs(hltb_raw_path)
+
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
 
     logger.info(
@@ -189,7 +204,7 @@ def load_latest_hltb_raw_data(
     logger = get_logger()
 
     # List all CSV files in the folder
-    csv_files = list(Path(path).glob("*.csv"))
+    csv_files = list(Path(path).rglob("*.csv"))
 
     # Filter and find the most recently modified file
     if csv_files:
