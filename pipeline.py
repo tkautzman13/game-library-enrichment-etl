@@ -79,7 +79,7 @@ if __name__ == '__main__':
         library=args.library,
         hltb=args.hltb,
         igdb=args.igdb,
-        skip_igdb_api=args.skip_igdb,
+        skip_igdb_api=args.skip_igdb_api,
         playtime=args.playtime,
         config_file=args.config
     )
