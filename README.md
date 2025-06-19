@@ -1,4 +1,5 @@
 # Video Game Library Enrichment ETL Pipline
-![game-library-enrichment-pipeline](https://github.com/user-attachments/assets/affb1d16-8c71-4acc-907b-a440291bf5e9)
 
-![game-library-enrichment-erd](https://github.com/user-attachments/assets/404579bf-9cb8-481c-a882-02177ea64cb7)
+![game-library-enrichment-pipeline](https://github.com/user-attachments/assets/900e2a9b-4ca8-4a2b-b87b-9cd84303e5ce)
+
+![game-library-enrichment-erd](https://github.com/user-attachments/assets/0b4106e6-7b09-4c95-8ab3-36bc4076247d)
