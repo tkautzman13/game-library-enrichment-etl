@@ -2,14 +2,12 @@ from src.utils import load_config, parse_args, setup_logger, ensure_directories_
 from src.game_library import extract_library_data, transform_library_data
 from src.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from src.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline
-from src.playtime_history import extract_playtime_data
 
 def run_data_pipeline(
         library=True,
         hltb=True,
         igdb=True,
         skip_igdb_api=False,
-        playtime=True,
         config_file='config.yaml'
 ):
     logger = setup_logger()
@@ -59,13 +57,6 @@ def run_data_pipeline(
             # Perform fuzzy matching between IGDB and Library data
             igdb_fuzzy_match_pipeline(config=pipeline_config)
 
-        if playtime:
-            logger.info("=" * 120)
-            logger.info(' PLAYTIME')
-            logger.info("=" * 120)
-            # Collect playtime history data
-            extract_playtime_data(config=pipeline_config)
-
         logger.info('COMPLETE: Data pipeline has finished')
     
     except Exception as e:
@@ -80,6 +71,5 @@ if __name__ == '__main__':
         hltb=args.hltb,
         igdb=args.igdb,
         skip_igdb_api=args.skip_igdb_api,
-        playtime=args.playtime,
         config_file=args.config
     )

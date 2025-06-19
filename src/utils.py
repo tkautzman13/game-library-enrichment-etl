@@ -86,8 +86,6 @@ def parse_args():
                        help='Run the HowLongToBeat data pipeline (default: False)')
     parser.add_argument('--igdb', action='store_true', default=False,
                        help='Run the IGDB data pipeline (default: False)')
-    parser.add_argument('--playtime', action='store_true', default=False,
-                       help='Run the playtime history pipeline (default: False)')
     
     # Special flag to run all components (maintains backward compatibility)
     parser.add_argument('--all', action='store_true', default=False,
@@ -108,14 +106,12 @@ def parse_args():
         args.library = True
         args.hltb = True
         args.igdb = True
-        args.playtime = True
     
     # If no specific components are selected and --all is not used, run all by default
     if not any([args.library, args.hltb, args.igdb, args.playtime]):
         args.library = True
         args.hltb = True
         args.igdb = True
-        args.playtime = True
     
     return args
 
