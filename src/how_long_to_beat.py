@@ -29,7 +29,7 @@ def extract_hltb_data(
     logger.info("Beginning HLTB data extraction...")
 
     # File Paths
-    library_cleaned_file = f'{config["data"]["processed_path"]}library_cleaned.csv'
+    library_cleaned_file = f'{config["data"]["processed_path"]}playnite_library.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
     logger.debug("Reading prepared library data...")
@@ -130,7 +130,7 @@ def transform_hltb_data(
     hltb_raw_path = config["data"]["hltb_raw_path"]
     processed_path = config["data"]["processed_path"]
     hltb_issues_report_path = config["data"]["hltb_issues_report_path"]
-    library_cleaned_file = f'{processed_path}library_cleaned.csv'
+    library_cleaned_file = f'{processed_path}playnite_library.csv'
 
     # Step 1: Load latest HLTB data
     logger.debug("Loading HLTB data...")
@@ -172,15 +172,15 @@ def transform_hltb_data(
             "Library Release Year",
             "hltb_main",
             "hltb_extra",
-            "hltb_completionist",
+            "hltb_completion",
         ]
     ].to_csv(
-        f"{processed_path}hltb_cleaned.csv",
+        f"{processed_path}hltb_playtimes.csv",
         index=False,
     )
 
     logger.info(
-        f"COMPLETE: HLTB data successfully processed and stored in: {processed_path}hltb_cleaned.csv"
+        f"COMPLETE: HLTB data successfully processed and stored in: {processed_path}hltb_playtimes.csv"
     )
 
 
