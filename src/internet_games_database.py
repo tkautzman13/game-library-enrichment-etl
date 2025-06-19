@@ -31,7 +31,7 @@ def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
     """
     logger = get_logger()
 
-    logger.info('Beginning IGDB connection...')
+    logger.info('Beginning IGDB connection setup...')
 
     try:
         client_id = config['igdb_api']['client_id']
@@ -238,7 +238,7 @@ def extract_igdb_data_full(connection: IGDBWrapper, endpoint: str, config: Dict[
     df = pd.DataFrame(data)
 
     df.to_csv(f'{output_path}igdb_{endpoint}.csv', index=False)
-    logger.info(f'COMPLETE: {endpoint} data successfully written to {output_path}igdb_{endpoint}.csv')
+    logger.info(f'COMPLETE: {endpoint} endpoint data successfully written to {output_path}igdb_{endpoint}.csv')
 
 
 def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
@@ -284,7 +284,7 @@ def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: 
     if len(update_data) == 0:
         logger.info('No updated rows retrieved. File not updated.')
     else:
-        logger.info(f'{len(update_data)} updated rows successfully retrieved from {endpoint}')
+        logger.info(f'{len(update_data)} updated rows successfully retrieved from {endpoint} endpoint')
 
         # Setup new dataframes
         update_df = pd.DataFrame(update_data).set_index('id')
@@ -296,7 +296,7 @@ def update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any], endpoint: 
         endpoint_df.reset_index(inplace=True)
 
         endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=False)
-        logger.info(f'COMPLETE: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
+        logger.info(f'COMPLETE: {endpoint} endpoint data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
 def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpoint: str) -> None:
@@ -342,7 +342,7 @@ def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpo
     if len(new_data) == 0:
         logger.info('No new rows retrieved. File not updated.')
     else:
-        logger.info(f'{len(new_data)} new rows successfully retrieved from {endpoint}')
+        logger.info(f'{len(new_data)} new rows successfully retrieved from {endpoint} endpoint')
 
         new_df = pd.DataFrame(new_data).set_index('id')
 
@@ -354,7 +354,7 @@ def extract_igdb_data_new(connection: IGDBWrapper, config: Dict[str, Any], endpo
         new_endpoint_df = pd.concat([endpoint_df, new_df]).reset_index()
 
         new_endpoint_df.to_csv(f'{igdb_raw_path}igdb_{endpoint}.csv', index=False)
-        logger.info(f'COMPLETE: {endpoint} data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
+        logger.info(f'COMPLETE: {endpoint} endpoint data successfully updated and written to {igdb_raw_path}igdb_{endpoint}.csv')
 
 
 def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = True) -> None:
@@ -398,10 +398,10 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
         create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_issues_report_path=igdb_issues_report_path)
 
     # Append IGDB IDs to playnite_library.csv
-    library_with_igdb_ids.to_csv(f'{config['data']['processed_path']}playnite_library.csv', index=False)
+    library_with_igdb_ids.to_csv(f'{config['data']['processed_path']}playnite_library_igdb.csv', index=False)
 
     logger.info(
-        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['processed_path']}playnite_library.csv"
+        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['processed_path']}playnite_library_igdb.csv"
     )
 
 
@@ -430,7 +430,7 @@ def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame,
     logger = get_logger()
 
     # Change library_df index to 'Id' field
-    library_df = library_df.set_index('Id')
+    library_df = library_df.set_index('id')
     
     # Get unique game names for fuzzy matching
     igdb_games_unique = igdb_df['name'].dropna().unique().tolist()
@@ -441,7 +441,7 @@ def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame,
 
     logger.info('Beginning library/IGDB fuzzy matching...')
     for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
-        game_name = row['Name']
+        game_name = row['name']
         
         if pd.isna(game_name):
             matches.append({
@@ -522,7 +522,7 @@ def filter_and_match_igdb_data(library_df: pd.DataFrame, igdb_df: pd.DataFrame, 
     logger.debug('Removing duplicate matches from library/IGDB fuzzy matching...')
     # Merge with original library dataframe
     library_df_with_matches = match_df.merge(
-        library_df.rename(columns={'Id': 'library_id'}),
+        library_df.rename(columns={'id': 'library_id'}),
         on='library_id',
         how='left'
     )
@@ -551,10 +551,10 @@ def filter_and_match_igdb_data(library_df: pd.DataFrame, igdb_df: pd.DataFrame, 
         igdb_with_library = result
 
     # Keep only library and IGDB ids
-    id_matches = igdb_with_library[['library_id', 'id']].rename(columns={'library_id': 'Id', 'id':'igdb_game_id'})
+    id_matches = igdb_with_library[['library_id', 'id']].rename(columns={'library_id': 'id', 'id':'igdb_game_id'})
 
     # Merge with library_df
-    library_df = library_df.merge(id_matches, on='Id')
+    library_df = library_df.merge(id_matches, on='id')
 
     logger.debug('COMPLETE: Duplicates removed')
 
@@ -582,7 +582,7 @@ def select_best_igdb_match(group: pd.DataFrame) -> pd.Series:
         return group.iloc[0]
     
     # First, try to match by release year if available in library data
-    library_year = group.iloc[0].get('Release Year', None)  # Adjust column name as needed
+    library_year = group.iloc[0].get('release_year', None)  # Adjust column name as needed
     if pd.notna(library_year):
         # Convert library year to int for comparison
         try:
@@ -650,20 +650,20 @@ def create_comprehensive_igdb_matching_report(
     category_analysis = []
 
     # Get all library games for comparison
-    all_library_games = library_df[["Id", "Name", "Release Year"]].copy() if "Release Year" in library_df.columns else library_df[["Id", "Name"]].copy()
+    all_library_games = library_df[["id", "name", "release_year"]].copy() if "release_year" in library_df.columns else library_df[["id", "name"]].copy()
 
     # 1. Check for games with no IGDB records (missing from merged data)
     merged_library_ids = set(igdb_with_library["library_id"].dropna())
-    all_library_ids = set(all_library_games["Id"])
+    all_library_ids = set(all_library_games["id"])
     missing_library_ids = all_library_ids - merged_library_ids
 
     for library_id in missing_library_ids:
-        game_info = all_library_games[all_library_games["Id"] == library_id].iloc[0]
+        game_info = all_library_games[all_library_games["id"] == library_id].iloc[0]
         no_igdb_records.append(
             {
-                "Library ID": library_id,
-                "Game Name": game_info["Name"],
-                "Library Year": game_info.get("Release Year", "Unknown"),
+                "library_id": library_id,
+                "game_name": game_info["name"],
+                "library_year": game_info.get("release_year", "Unknown"),
             }
         )
 
@@ -678,7 +678,7 @@ def create_comprehensive_igdb_matching_report(
             continue
 
         game_name = group["library_name"].iloc[0]
-        library_year = group.get("Release Year", pd.Series([None])).iloc[0] if "Release Year" in group.columns else None
+        library_year = group.get("release_year", pd.Series([None])).iloc[0] if "release_year" in group.columns else None
         similarity_score = group["similarity_score"].iloc[0] if "similarity_score" in group.columns else None
 
         # Check for low similarity (games that were matched but with low confidence)
@@ -686,11 +686,11 @@ def create_comprehensive_igdb_matching_report(
             igdb_match = group["igdb_name"].iloc[0] if "igdb_name" in group.columns else "Unknown"
             low_similarity_games.append(
                 {
-                    "Library ID": library_id,
-                    "Game Name": game_name,
-                    "Library Year": library_year,
-                    "Similarity Score": similarity_score,
-                    "IGDB Match": igdb_match,
+                    "library_id": library_id,
+                    "game_name": game_name,
+                    "library_year": library_year,
+                    "similarity_score": similarity_score,
+                    "igdb_match": igdb_match,
                 }
             )
 
@@ -707,12 +707,12 @@ def create_comprehensive_igdb_matching_report(
                     if abs(igdb_year - library_year_int) > 1:
                         year_mismatches.append(
                             {
-                                "Library ID": library_id,
-                                "Game Name": game_name,
-                                "Library Year": library_year_int,
-                                "IGDB Year": igdb_year,
-                                "Year Difference": abs(igdb_year - library_year_int),
-                                "IGDB Match": group["igdb_name"].iloc[0] if "igdb_name" in group.columns else "Unknown",
+                                "library_id": library_id,
+                                "game_name": game_name,
+                                "library_year": library_year_int,
+                                "igdb_year": igdb_year,
+                                "year_difference": abs(igdb_year - library_year_int),
+                                "igdb_match": group["igdb_name"].iloc[0] if "igdb_name" in group.columns else "Unknown",
                             }
                         )
                 except (ValueError, TypeError):
@@ -725,12 +725,12 @@ def create_comprehensive_igdb_matching_report(
             category_name = get_igdb_category_name(category)
             category_analysis.append(
                 {
-                    "Library ID": library_id,
-                    "Game Name": game_name,
-                    "IGDB Match": group["igdb_name"].iloc[0],
-                    "Category": category,
-                    "Category Name": category_name,
-                    "Similarity Score": similarity_score,
+                    "library_id": library_id,
+                    "game_name": game_name,
+                    "igdb_match": group["igdb_name"].iloc[0],
+                    "category": category,
+                    "category_name": category_name,
+                    "similarity_score": similarity_score,
                 }
             )
 
@@ -788,7 +788,7 @@ def create_comprehensive_igdb_matching_report(
         logger.info(f"Game category distribution for {len(category_analysis)} matched games:")
         logger.info("-" * 60)
         category_df = pd.DataFrame(category_analysis)
-        category_counts = category_df["Category Name"].value_counts()
+        category_counts = category_df["category_name"].value_counts()
         for category, count in category_counts.items():
             percentage = count / len(category_analysis) * 100
             logger.info(f"   {category}: {count} games ({percentage:.1f}%)")
@@ -798,11 +798,11 @@ def create_comprehensive_igdb_matching_report(
         logger.info(f" Detailed category analysis saved to: {igdb_issues_report_path}category_analysis.csv")
 
         # Check for non-main games
-        non_main_games = category_df[category_df["Category"] != 0]
+        non_main_games = category_df[category_df["category"] != 0]
         if len(non_main_games) > 0:
             logger.info(f"{len(non_main_games)} matched games are not main games:")
             logger.info("   (Consider reviewing these matches)")
-            non_main_summary = non_main_games.groupby("Category Name").size()
+            non_main_summary = non_main_games.groupby("category_name").size()
             for category, count in non_main_summary.items():
                 logger.info(f"   - {category}: {count} games")
 

@@ -60,7 +60,7 @@ def run_data_pipeline(
         logger.info('COMPLETE: Data pipeline has finished')
     
     except Exception as e:
-         logger.error(f'Pipeline failed with error: {e}')
+        logger.exception('Pipeline failed with error')
 
 
 if __name__ == '__main__':

@@ -50,7 +50,7 @@ def extract_hltb_data(
             search_name = search_name.replace('Version', '').strip()
         
         # Get results_list (Check if game is marked as "DLC")
-        if isinstance(row["Categories"], str) and "DLC" in row["Categories"]:
+        if isinstance(row["categories"], str) and "DLC" in row["categories"]:
             results_list = HowLongToBeat().search(
                 search_name, similarity_case_sensitive=False
             )
@@ -69,9 +69,9 @@ def extract_hltb_data(
                 "similarity": element.similarity,
                 "hltb_main": element.main_story,
                 "hltb_extra": (element.main_extra - element.main_story),
-                "hltb_completionist": (element.completionist - element.main_story),
-                "Library Name": row["Name"],
-                "Library ID": row["Id"]
+                "hltb_completion": (element.completionist - element.main_story),
+                "library_name": row["name"],
+                "library_id": row["id"]
             }
             all_hltb_data.append(row_data)
 
@@ -149,16 +149,16 @@ def transform_hltb_data(
         # Need to recreate hltb_with_library for reporting
         hltb_filtered_df = hltb_raw_df[
             hltb_raw_df["similarity"]
-            == hltb_raw_df.groupby(by="Library ID", as_index=False)[
+            == hltb_raw_df.groupby(by="library_id", as_index=False)[
                 "similarity"
             ].transform("max")
         ]
         hltb_filtered_df = hltb_filtered_df[~hltb_filtered_df.duplicated()]
         hltb_with_library_df = hltb_filtered_df.merge(
-            library_df[["Id", "Name", "Library Release Year"]],
+            library_df[["id", "name", "library_release_year"]],
             how="right",
-            left_on="Library ID",
-            right_on="Id",
+            left_on="library_id",
+            right_on="id",
         )
 
         create_comprehensive_matching_report(
@@ -167,9 +167,9 @@ def transform_hltb_data(
 
     hltb_processed_df[
         [
-            "Library Name",
-            "Library ID",
-            "Library Release Year",
+            "library_name",
+            "library_id",
+            "library_release_year",
             "hltb_main",
             "hltb_extra",
             "hltb_completion",
@@ -226,12 +226,12 @@ def select_best_hltb_match(
     Parameters:
     -----------
     group : pd.DataFrame
-        A grouped subset of HLTB data corresponding to a single Library ID.
+        A grouped subset of HLTB data corresponding to a single library_id.
 
     Returns:
     --------
     pd.DataFrame
-        The best-matching record(s) for the given Library ID group.
+        The best-matching record(s) for the given library_id group.
     """
     logger = get_logger()
 
@@ -239,9 +239,9 @@ def select_best_hltb_match(
         return group
 
     # Multiple records - find best match
-    library_year = group["Library Release Year"].iloc[0]
+    library_year = group["library_release_year"].iloc[0]
 
-    # Calculate absolute difference between HLTB release year and Library release year
+    # Calculate absolute difference between HLTB release year and library_release_year
     group_copy = group.copy()
     group_copy["year_diff"] = abs(group_copy["release_year"] - library_year)
 
@@ -281,10 +281,10 @@ def filter_and_match_hltb_data(
     """
     logger = get_logger()
 
-    # Keep only hltb records that contain the maximum similarity score for each Library ID
+    # Keep only hltb records that contain the maximum similarity score for each library_id
     hltb_filtered_df = hltb_raw_df[
         hltb_raw_df["similarity"]
-        == hltb_raw_df.groupby(by="Library ID", as_index=False)["similarity"].transform(
+        == hltb_raw_df.groupby(by="library_id", as_index=False)["similarity"].transform(
             "max"
         )
     ]
@@ -294,16 +294,16 @@ def filter_and_match_hltb_data(
 
     # Merge with library data to get release years and names
     hltb_with_library_df = hltb_filtered_df.merge(
-        library_df[["Id", "Name", "Library Release Year"]],
+        library_df[["id", "name", "library_release_year"]],
         how="right",
-        left_on="Library ID",
-        right_on="Id",
+        left_on="library_id",
+        right_on="id",
     )
 
     logger.debug("Resolving release year mismatches...")
 
-    # Apply the function to each Library ID group
-    hltb_new_df = hltb_with_library_df.groupby("Library ID", group_keys=False).apply(
+    # Apply the function to each library_id group
+    hltb_new_df = hltb_with_library_df.groupby("library_id", group_keys=False).apply(
         select_best_hltb_match
     )
 
@@ -344,46 +344,46 @@ def create_comprehensive_matching_report(
     low_similarity_games = []
 
     # Get all library games for comparison
-    all_library_games = library_df[["Id", "Name", "Library Release Year"]].copy()
+    all_library_games = library_df[["id", "name", "library_release_year"]].copy()
 
     # 1. Check for games with no HLTB records (missing from merged data)
-    merged_library_ids = set(hltb_with_library_df["Library ID"].dropna())
-    all_library_ids = set(all_library_games["Id"])
+    merged_library_ids = set(hltb_with_library_df["library_id"].dropna())
+    all_library_ids = set(all_library_games["id"])
     missing_library_ids = all_library_ids - merged_library_ids
 
     for library_id in missing_library_ids:
-        game_info = all_library_games[all_library_games["Id"] == library_id].iloc[0]
+        game_info = all_library_games[all_library_games["id"] == library_id].iloc[0]
         no_hltb_records.append(
             {
-                "Library ID": library_id,
-                "Game Name": game_info["Name"],
-                "Library Year": game_info["Library Release Year"],
+                "library_id": library_id,
+                "game_name": game_info["name"],
+                "library_year": game_info["library_release_year"],
             }
         )
 
     # 2. Check for low similarity scores and year mismatches
-    for library_id in hltb_with_library_df["Library ID"].unique():
+    for library_id in hltb_with_library_df["library_id"].unique():
         if pd.isna(library_id):
             continue
 
-        group = hltb_with_library_df[hltb_with_library_df["Library ID"] == library_id]
+        group = hltb_with_library_df[hltb_with_library_df["library_id"] == library_id]
 
         if len(group) == 0:
             continue
 
-        game_name = group["Name"].iloc[0]
-        library_year = group["Library Release Year"].iloc[0]
+        game_name = group["name"].iloc[0]
+        library_year = group["library_release_year"].iloc[0]
         max_similarity = group["similarity"].max()
 
         # Check for low similarity
         if max_similarity < 0.75:
             low_similarity_games.append(
                 {
-                    "Library ID": library_id,
-                    "Game Name": game_name,
-                    "Library Year": library_year,
-                    "Max Similarity": max_similarity,
-                    "HLTB Match": (
+                    "library_id": library_id,
+                    "game_name": game_name,
+                    "library_year": library_year,
+                    "max_similarity": max_similarity,
+                    "hltb_match": (
                         group.loc[group["similarity"].idxmax(), "game"]
                         if "game" in group.columns
                         else "Unknown"
@@ -398,11 +398,11 @@ def create_comprehensive_matching_report(
             if library_year not in hltb_years:
                 year_mismatches.append(
                     {
-                        "Library ID": library_id,
-                        "Game Name": game_name,
-                        "Library Year": library_year,
-                        "HLTB Years": hltb_years,
-                        "Closest HLTB Year": min(
+                        "library_id": library_id,
+                        "game_name": game_name,
+                        "library_year": library_year,
+                        "hltb_year": hltb_years,
+                        "closest_hltb_year": min(
                             hltb_years, key=lambda x: abs(x - library_year)
                         ),
                     }

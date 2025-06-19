@@ -108,7 +108,7 @@ def parse_args():
         args.igdb = True
     
     # If no specific components are selected and --all is not used, run all by default
-    if not any([args.library, args.hltb, args.igdb, args.playtime]):
+    if not any([args.library, args.hltb, args.igdb]):
         args.library = True
         args.hltb = True
         args.igdb = True

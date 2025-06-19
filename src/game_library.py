@@ -47,8 +47,8 @@ def transform_library_data(
     Reads a CSV file containing library data, cleans and processes the data by:
     - Removing platform suffixes (e.g., '(Xbox)', '(Game Pass)', etc.) from game names.
     - Filtering out games categorized as 'Apps'.
-    - Removing entries with missing 'Completion Status'.
-    - Dropping duplicate games based on 'Name' and 'Release Date'.
+    - Removing entries with missing 'completion_status'.
+    - Dropping duplicate games based on 'name' and 'release_date'.
     - Filter out games with 'Ignore' category
     - Add name_no_punct field that removes specific punctuation (-, :)
     - Add Library Release Year field for matching processes
@@ -77,7 +77,14 @@ def transform_library_data(
     logger.debug('Filtering and cleaning library data...')
     # Column name changes
     library_interm_df = library_interm_df.rename(
-        columns={"CompletionStatus": "Completion Status", "ReleaseDate": "Release Date"}
+        columns={
+            "Name": "name",
+            "Id": "id",
+            "Hidden": "hidden",
+            "Categories": "categories",
+            "CompletionStatus": "completion_status", 
+            "ReleaseDate": "release_date"
+            }
     )
 
     # Remove (Xbox), (Game Pass), (Switch), (PlayStation) suffix from game names
@@ -85,34 +92,34 @@ def transform_library_data(
     replacement = ""
 
     for suffix in suffixes:
-        library_interm_df["Name"] = library_interm_df["Name"].str.replace(suffix, replacement)
+        library_interm_df["name"] = library_interm_df["name"].str.replace(suffix, replacement)
 
     # Exclude 'Apps' Category games (ie GamePass)
-    library_interm_df = library_interm_df[~library_interm_df["Categories"].str.contains("Apps", na=False)]
+    library_interm_df = library_interm_df[~library_interm_df["categories"].str.contains("Apps", na=False)]
 
-    # Exclude games without a library Completion Status
-    library_interm_df = library_interm_df[~library_interm_df["Completion Status"].isnull()]
+    # Exclude games without a library completion_status
+    library_interm_df = library_interm_df[~library_interm_df["completion_status"].isnull()]
 
     # Drop duplicates
-    library_interm_df = library_interm_df.drop_duplicates(subset=["Name", "Release Date"])
+    library_interm_df = library_interm_df.drop_duplicates(subset=["name", "release_date"])
 
     # Filter out 'HLTB Ignore' flagged records
     library_interm_df = library_interm_df[
-        ~library_interm_df["Categories"].str.contains("Ignore", na=False)
+        ~library_interm_df["categories"].str.contains("Ignore", na=False)
     ]
 
-    # Fix dashes and colons found in library_data.Name
+    # Fix dashes and colons found in library_data.name
     replacements = {"–": "-", ":": ""}
-    library_interm_df["name_no_punct"] = library_interm_df["Name"].replace(
+    library_interm_df["name_no_punct"] = library_interm_df["name"].replace(
         replacements, regex=True
     )
 
-    # Ensure the Release Date field is a date
-    library_interm_df["Release Date"] = pd.to_datetime(library_interm_df["Release Date"])
+    # Ensure the release_date field is a date
+    library_interm_df["release_date"] = pd.to_datetime(library_interm_df["release_date"])
 
-    # Add Library Release Dates to the library data
-    library_interm_df["Library Release Year"] = pd.to_datetime(
-        library_interm_df["Release Date"]
+    # Add Library release_dates to the library data
+    library_interm_df["library_release_year"] = pd.to_datetime(
+        library_interm_df["release_date"]
     ).dt.year
 
     logger.debug('Writing cleaned library data...')
