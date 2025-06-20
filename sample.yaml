@@ -1,0 +1,8 @@
+data:
+  library_source_file: "data/test/library_sample_data.csv"
+  raw_path: "data/test/raw/"
+  processed_path: "data/test/processed/"
+  hltb_raw_path: "data/test/raw/hltb_extracts/"
+  hltb_issues_report_path: "data/test/reports/hltb_matching_reports/"
+  igdb_raw_path: "data/test/raw/igdb/"
+  igdb_issues_report_path: "data/test/reports/igdb_matching_reports/"
