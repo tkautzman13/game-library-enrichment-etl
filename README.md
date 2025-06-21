@@ -79,12 +79,17 @@ data:
 3. The project will output CSVs for the data model within the project data folder by default. If you wish to change this, adjust the following variables:
 ```yaml
 data:
-  raw_path: "data/test/raw/"
-  processed_path: "data/test/processed/"
-  hltb_raw_path: "data/test/raw/hltb_extracts/"
-  hltb_issues_report_path: "data/test/reports/hltb_matching_reports/"
-  igdb_raw_path: "data/test/raw/igdb/"
-  igdb_issues_report_path: "data/test/reports/igdb_matching_reports/"
+  library_source_file: "data/library_sample_data.csv" # Change to your own library file path if needed
+  library_raw_path: "data/raw/library/"
+  library_processed_path: "data/processed/library/"
+
+  hltb_raw_path: "data/raw/hltb/extracts/"
+  hltb_processed_path: "data/processed/hltb/"
+  hltb_report_path: "data/processed/hltb/reports/"
+
+  igdb_raw_path: "data/sample/" # Change to "data/raw/igdb/" if using API credentials
+  igdb_processed_path: "data/processed/igdb/"
+  igdb_report_path: "data/processed/igdb/reports/"
 ```
 
 ### Quick Start

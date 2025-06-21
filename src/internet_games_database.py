@@ -380,7 +380,7 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
 
     logger.info('Beginning IGDB-Library fuzzy matching...')
     # Load library and igdb data
-    library_cleaned=pd.read_csv(f'{config['data']['processed_path']}playnite_library.csv')
+    library_cleaned=pd.read_csv(f'{config['data']['library_processed_path']}playnite_library.csv')
     igdb_games=pd.read_csv(f'{config['data']['igdb_raw_path']}igdb_games.csv', low_memory=False)
 
     # Drop igdb_id field from library_cleaned if exists
@@ -394,14 +394,14 @@ def igdb_fuzzy_match_pipeline(config: Dict[str, Any], generate_report: bool = Tr
 
     # If True, generate report
     if generate_report:
-        igdb_issues_report_path=f'{config['data']['igdb_issues_report_path']}'
+        igdb_issues_report_path=f'{config['data']['igdb_report_path']}'
         create_comprehensive_igdb_matching_report(igdb_with_library=igdb_data_with_library, library_df=library_cleaned, match_df=match_df, igdb_issues_report_path=igdb_issues_report_path)
 
     # Append IGDB IDs to playnite_library.csv
-    library_with_igdb_ids.to_csv(f'{config['data']['processed_path']}playnite_library_igdb.csv', index=False)
+    library_with_igdb_ids.to_csv(f'{config['data']['library_processed_path']}playnite_library_igdb.csv', index=False)
 
     logger.info(
-        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['processed_path']}playnite_library_igdb.csv"
+        f"COMPLETE: Library data successfully fuzzy matched with IGDB data and stored in: {config['data']['library_processed_path']}playnite_library_igdb.csv"
     )
 
 

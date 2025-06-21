@@ -29,7 +29,7 @@ def extract_hltb_data(
     logger.info("Beginning HLTB data extraction...")
 
     # File Paths
-    library_cleaned_file = f'{config["data"]["processed_path"]}playnite_library.csv'
+    library_cleaned_file = f'{config["data"]["library_processed_path"]}playnite_library.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
 
     logger.debug("Reading prepared library data...")
@@ -128,8 +128,8 @@ def transform_hltb_data(
     logger.info("Beginning HLTB data processing...")
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
-    processed_path = config["data"]["processed_path"]
-    hltb_issues_report_path = config["data"]["hltb_issues_report_path"]
+    processed_path = config["data"]["hltb_processed_path"]
+    hltb_issues_report_path = config["data"]["hltb_report_path"]
     library_cleaned_file = f'{processed_path}playnite_library.csv'
 
     # Step 1: Load latest HLTB data

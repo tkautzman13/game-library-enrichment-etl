@@ -25,7 +25,7 @@ def extract_library_data(
 
     # File paths
     input_file = config["data"]["library_source_file"]
-    output_file = f'{config["data"]["raw_path"]}playnite_library_raw.csv'
+    output_file = f'{config["data"]["library_raw_path"]}playnite_library_raw.csv'
 
     # Read library CSV data from input_file source
     logger.debug('Reading source library data...')
@@ -68,8 +68,8 @@ def transform_library_data(
     logger.info('Beginning library data cleaning...')
 
     # File paths
-    input_file = f'{config["data"]["raw_path"]}playnite_library_raw.csv'
-    output_file = f'{config["data"]["processed_path"]}playnite_library.csv'
+    input_file = f'{config["data"]["library_raw_path"]}playnite_library_raw.csv'
+    output_file = f'{config["data"]["library_processed_path"]}playnite_library.csv'
 
     logger.debug('Reading raw library data...')
     library_interm_df = pd.read_csv(input_file)

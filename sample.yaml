@@ -1,8 +1,12 @@
 data:
-  library_source_file: "data/library_sample_data.csv"
-  raw_path: "data/raw/"
-  processed_path: "data/processed/"
-  hltb_raw_path: "data/raw/hltb_extracts/"
-  hltb_issues_report_path: "data/reports/hltb_matching_reports/"
-  igdb_raw_path: "data/raw/igdb/"
-  igdb_issues_report_path: "data/reports/igdb_matching_reports/"
+  library_source_file: "data/library_sample_data.csv" # Change to your own library file path if needed
+  library_raw_path: "data/raw/library/"
+  library_processed_path: "data/processed/library/"
+
+  hltb_raw_path: "data/raw/hltb/extracts/"
+  hltb_processed_path: "data/processed/hltb/"
+  hltb_report_path: "data/processed/hltb/reports/"
+
+  igdb_raw_path: "data/sample/" # Change to "data/raw/igdb/" if using API credentials
+  igdb_processed_path: "data/processed/igdb/"
+  igdb_report_path: "data/processed/igdb/reports/"
