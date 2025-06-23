@@ -56,6 +56,8 @@ def run_data_pipeline(
 
             # Perform fuzzy matching between IGDB and Library data
             igdb_fuzzy_match_pipeline(config=pipeline_config)
+
+            # Copy igdb data to processed
             copy_igdb_data_to_processed(config=pipeline_config)
             
 
