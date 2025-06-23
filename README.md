@@ -67,14 +67,11 @@ pip install -r requirements.txt
 
 **If you wish to run your own library through the pipeline *and* you have setup IGDB API credentials**:
 1. Copy `sample.yaml` to `config.yaml`
-2. Update file paths and add your IGDB API credentials:
+2. Update your IGDB API credentials (if you want to pull all IGDB data):
 ```yaml
-igdb:
+igdb_api:
   client_id: "your_client_id"
   client_secret: "your_client_secret"
-
-data:
-  library_source_file: "data/test/library_sample_data.csv"
 ```
 3. The project will output CSVs for the data model within the project data folder by default. If you wish to change this, adjust the following variables:
 ```yaml

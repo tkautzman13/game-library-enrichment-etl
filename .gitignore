@@ -14,5 +14,4 @@ __pycache__/
 
 !/src/data
 !/data/test/processed
-!/data/raw/igdb
 !sample.yaml

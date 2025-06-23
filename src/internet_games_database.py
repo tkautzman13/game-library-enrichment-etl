@@ -8,7 +8,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 from typing import Dict, Any, List, Tuple, Optional, Union
-from utils import get_logger
+from src.utils import get_logger
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:

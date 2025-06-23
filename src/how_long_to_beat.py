@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
 from typing import Dict, Any
-from utils import get_logger
+from src.utils import get_logger
 import os 
 
 
@@ -130,7 +130,7 @@ def transform_hltb_data(
     hltb_raw_path = config["data"]["hltb_raw_path"]
     processed_path = config["data"]["hltb_processed_path"]
     hltb_issues_report_path = config["data"]["hltb_report_path"]
-    library_cleaned_file = f'{processed_path}playnite_library.csv'
+    library_cleaned_file = f'{config["data"]["library_processed_path"]}playnite_library.csv'
 
     # Step 1: Load latest HLTB data
     logger.debug("Loading HLTB data...")

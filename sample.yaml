@@ -1,5 +1,5 @@
 data:
-  library_source_file: "data/library_sample_data.csv" # Change to your own library file path if needed
+  library_source_file: "data/sample/library_sample_data.csv" # Change to your own library file path if needed
   library_raw_path: "data/raw/library/"
   library_processed_path: "data/processed/library/"
 
