@@ -614,6 +614,41 @@ def select_best_igdb_match(group: pd.DataFrame) -> pd.Series:
     return group.iloc[0]
 
 
+def copy_igdb_data_to_processed(config: Dict[str, Any]) -> None:
+    """
+    Copies IGDB data files from raw to processed directory.
+
+    Moves all IGDB-related CSV files from the raw data directory to the processed data directory,
+    ensuring that the processed directory contains the latest IGDB data for further analysis.
+
+    Parameters:
+    -----------
+    config : Dict[str, Any]
+        Configuration dictionary containing data paths with keys:
+        - 'data': dict with 'igdb_raw_path' and 'igdb_processed_path' for file locations
+
+    Returns:
+    --------
+    None
+    """
+    logger = get_logger()
+
+    igdb_raw_path = config['data']['igdb_raw_path']
+    igdb_processed_path = config['data']['igdb_processed_path']
+
+    # List all IGDB CSV files in raw path
+    igdb_files = [f for f in os.listdir(igdb_raw_path) if f.startswith('igdb_') and f.endswith('.csv')]
+
+    # Copy each file to processed path
+    for file_name in igdb_files:
+        src_file = os.path.join(igdb_raw_path, file_name)
+        dest_file = os.path.join(igdb_processed_path, file_name)
+        os.replace(src_file, dest_file)
+        logger.info(f"Copied {file_name} to processed directory")
+    
+    logger.info("COMPLETE: IGDB data files copied to processed directory")
+
+
 def create_comprehensive_igdb_matching_report(
     igdb_with_library: pd.DataFrame, 
     library_df: pd.DataFrame, 
