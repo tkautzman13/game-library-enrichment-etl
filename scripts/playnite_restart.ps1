@@ -7,4 +7,4 @@ Get-Process "Playnite.FullscreenApp" -ErrorAction SilentlyContinue | Stop-Proces
 Start-Sleep -Seconds 3
 
 # Start Playnite in fullscreen mode
-Start-Process "C:\Users\Tkaut\AppData\Local\Playnite\Playnite.FullscreenApp.exe"
+Start-Process "$env:LOCALAPPDATA\Playnite\Playnite.FullscreenApp.exe"
