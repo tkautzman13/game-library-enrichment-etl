@@ -65,6 +65,7 @@ def run_data_pipeline(
     
     except Exception as e:
         logger.exception('Pipeline failed with error')
+        raise
 
 
 if __name__ == '__main__':
