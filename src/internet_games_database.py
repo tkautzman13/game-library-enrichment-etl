@@ -9,6 +9,7 @@ from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 from typing import Dict, Any, List, Tuple, Optional, Union
 from src.utils import get_logger
+import shutil
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
@@ -643,7 +644,7 @@ def copy_igdb_data_to_processed(config: Dict[str, Any]) -> None:
     for file_name in igdb_files:
         src_file = os.path.join(igdb_raw_path, file_name)
         dest_file = os.path.join(igdb_processed_path, file_name)
-        os.replace(src_file, dest_file)
+        shutil.copy(src_file, dest_file)
         logger.info(f"Copied {file_name} to processed directory")
     
     logger.info("COMPLETE: IGDB data files copied to processed directory")
