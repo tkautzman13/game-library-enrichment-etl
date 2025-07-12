@@ -644,7 +644,7 @@ def copy_igdb_data_to_processed(config: Dict[str, Any]) -> None:
     for file_name in igdb_files:
         src_file = os.path.join(igdb_raw_path, file_name)
         dest_file = os.path.join(igdb_processed_path, file_name)
-        shutil.copy(src_file, dest_file)
+        shutil.copy2(src_file, dest_file)
         logger.info(f"Copied {file_name} to processed directory")
     
     logger.info("COMPLETE: IGDB data files copied to processed directory")
