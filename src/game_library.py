@@ -81,6 +81,7 @@ def transform_library_data(
             "Name": "name",
             "Id": "id",
             "Hidden": "hidden",
+            "Platforms": "platforms",
             "Categories": "categories",
             "CompletionStatus": "completion_status", 
             "ReleaseDate": "release_date"
