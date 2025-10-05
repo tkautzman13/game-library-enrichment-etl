@@ -7,6 +7,7 @@ import time
 import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
+import ast
 from typing import Dict, Any, List, Tuple, Optional, Union
 from src.utils import get_logger
 
@@ -614,12 +615,14 @@ def select_best_igdb_match(group: pd.DataFrame) -> pd.Series:
     return group.iloc[0]
 
 
-def copy_igdb_data_to_processed(config: Dict[str, Any]) -> None:
+def transform_igdb_data(config: Dict[str, Any]) -> None:
     """
-    Copies IGDB data files from raw to processed directory.
-
-    Moves all IGDB-related CSV files from the raw data directory to the processed data directory,
-    ensuring that the processed directory contains the latest IGDB data for further analysis.
+    Reads all igdb raw data files and performs basic transformations:
+        - Creates 'bridge' tables for fields in igdb_games containing arrays
+        - Removes unnecessary columns from main igdb_games table
+        - Copy all raw igdb_ files except igdb_games to processed directory
+    
+    Copies transformed data files to processed directory.
 
     Parameters:
     -----------
@@ -636,17 +639,53 @@ def copy_igdb_data_to_processed(config: Dict[str, Any]) -> None:
     igdb_raw_path = config['data']['igdb_raw_path']
     igdb_processed_path = config['data']['igdb_processed_path']
 
-    # List all IGDB CSV files in raw path
-    igdb_files = [f for f in os.listdir(igdb_raw_path) if f.startswith('igdb_') and f.endswith('.csv')]
+    logger.info('Beginning IGDB data transformation...')
 
-    # Copy each file to processed path
-    for file_name in igdb_files:
-        src_file = os.path.join(igdb_raw_path, file_name)
-        dest_file = os.path.join(igdb_processed_path, file_name)
-        os.replace(src_file, dest_file)
-        logger.info(f"Copied {file_name} to processed directory")
+    table_list = [
+        'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives'
+    ]
+
+    igdb_dfs = {}
+
+    for table in table_list:
+        igdb_dfs[table] = pd.read_csv(f'{igdb_raw_path}igdb_{table}.csv', low_memory=False)
+
+    # Create bridge tables for fields in igdb_games that contain arrays
+    bridge_tables = {
+        'genres_bridge': 'genres',
+        'themes_bridge': 'themes',
+        'keywords_bridge': 'keywords',
+        'player_perspectives_bridge': 'player_perspectives',
+        'franchises_bridge': 'franchises'
+    }
+
+    for bridge_table, igdb_field in bridge_tables.items():
+        logger.debug(f'Creating {bridge_table} bridge table...')
+
+        # The array fields in igdb_games are stored as strings - so we first need to convert them to arrays:
+        igdb_dfs['games'][igdb_field] = igdb_dfs['games'][igdb_field].apply(
+            lambda x: ast.literal_eval(x) if pd.notna(x) else []
+        )
+
+        # Now we can explode the arrays into separate rows
+        exploded = igdb_dfs['games'][['id', igdb_field]].explode(igdb_field)
+        exploded = exploded.dropna(subset=[igdb_field])
+        exploded = exploded.rename(columns={'id': 'game_id', igdb_field: f'{igdb_field[:-1]}_id'}) # remove plural 's' from field name
+        exploded = exploded.drop_duplicates()
+        
+        exploded.to_csv(f'{igdb_processed_path}igdb_{bridge_table}.csv', index=False)
+
+    # Remove unnecessary columns from igdb_games
+    columns_to_keep = ['id', 'game_type']
+    igdb_games_transformed = igdb_dfs['games'][columns_to_keep]
+    igdb_games_transformed.to_csv(f'{igdb_processed_path}igdb_games.csv', index=False)
+
+    # Copy all igdb_ tables except igdb_games to processed directory
+    for table in table_list:
+        if table != 'games':
+            igdb_dfs[table].to_csv(f'{igdb_processed_path}igdb_{table}.csv', index=False)
     
-    logger.info("COMPLETE: IGDB data files copied to processed directory")
+    logger.info("COMPLETE: IGDB data files transformed and exported to processed directory")
 
 
 def create_comprehensive_igdb_matching_report(

@@ -19,7 +19,7 @@ The purpose of this ETL pipeline is to automatically build out a personal video 
 ## Architecture & Data Flow
 
 ### Pipeline:
-![game-library-enrichment-pipeline](https://github.com/user-attachments/assets/50d7e008-70f8-40ce-8f74-1ab0060b15ee)
+![game-library-enrichment-pipeline](/docs/diagrams/game-library-enrichment-pipeline.png)
 
 ### Core ETL Components
 - **`playnite_library_extract.ps1`** - PowerShell script embedded within the Playnite application that exports library data
@@ -116,7 +116,7 @@ To set up the `playnite_library_extract.ps1` script to extract your Playnite lib
 
 ## Output & Results
 
-![game-library-enrichment-erd](https://github.com/user-attachments/assets/0b4106e6-7b09-4c95-8ab3-36bc4076247d)
+![game-library-enrichment-erd](/docs/diagrams/game-library-enrichment-erd.png)
 
 ### Generated Datasets
 - **`playnite_library_igdb.csv`** - cleaned library with IGDB game IDs

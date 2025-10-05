@@ -1,0 +1,192 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0" version="27.1.6">
+  <diagram name="Page-1" id="x2_401Ehpn6PiAUbaP9A">
+    <mxGraphModel dx="1061" dy="992" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-95" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="51.25" y="550" width="258.75" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-18" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#9673a6;dashed=1;dashPattern=8 8;strokeWidth=1;fillColor=#e1d5e7;" parent="1" vertex="1">
+          <mxGeometry x="537" y="650" width="380" height="318" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-30" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;dashed=1;dashPattern=8 8;strokeWidth=1;fillColor=#d5e8d4;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="430" y="20" width="830" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-16" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d6b656;dashed=1;dashPattern=8 8;strokeWidth=1;fillColor=#fff2cc;" parent="1" vertex="1">
+          <mxGeometry x="20" y="200" width="380" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-1" target="wBOgxTK9Ef12TYDMK7c5-43" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-1" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://howlongtobeat.com/img/hltb_brand2.png;" parent="1" vertex="1">
+          <mxGeometry x="689" y="111" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-4" target="wBOgxTK9Ef12TYDMK7c5-10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-4" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://cdn2.steamgriddb.com/icon_thumb/f9ab9a0f7c56435e35dc4dadf0eb6945.png;" parent="1" vertex="1">
+          <mxGeometry x="48" y="280" width="76" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-71" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-5" target="wBOgxTK9Ef12TYDMK7c5-67" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-72" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-5" target="wBOgxTK9Ef12TYDMK7c5-69" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-5" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://www.igdb.com/android-chrome-512x512.png;" parent="1" vertex="1">
+          <mxGeometry x="579.5" y="770" width="72" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-7" target="wBOgxTK9Ef12TYDMK7c5-35" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="483.4999999999998" y="317.9999999999998" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-7" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="306" y="282" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-8" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;Game Library Enrichment Pipeline&lt;/font&gt;&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="10" width="399.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-9" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Playnite Game Library&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="39" y="356" width="94" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-10" target="wBOgxTK9Ef12TYDMK7c5-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-10" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;PowerShell + Task Scheduler&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="165.13" y="292" width="109.25" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-14" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;playnite_library_&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;source&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="286.25" y="356" width="102.5" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-17" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;u&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Library Data&lt;/font&gt;&lt;/u&gt;&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="48.5" y="210" width="334" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-26" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;u&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;IGDB Data&lt;/font&gt;&lt;/u&gt;&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="575.5" y="660" width="334" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-31" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;u&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Library Encrichment&lt;/font&gt;&lt;/u&gt;&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="470" y="30" width="334" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-35" target="wBOgxTK9Ef12TYDMK7c5-37" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-35" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Field renaming, filtering, cleaning&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="450" y="294" width="126" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-37" target="wBOgxTK9Ef12TYDMK7c5-40" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-75" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-37" target="wBOgxTK9Ef12TYDMK7c5-73" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-37" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="606.5" y="282" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-38" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;playnite_library&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="593" y="351" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-40" target="wBOgxTK9Ef12TYDMK7c5-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-40" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;howlongtobeatpy&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Python API searches for library games&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="649" y="211" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-43" target="wBOgxTK9Ef12TYDMK7c5-46" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-43" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="840.5" y="110" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-44" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;htlb_extract_*&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="827" y="179" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-46" target="wBOgxTK9Ef12TYDMK7c5-48" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-46" target="wBOgxTK9Ef12TYDMK7c5-50" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-46" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Resolve HLTB-Library matching issues&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="960" y="117" width="121" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-48" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://cdn-icons-png.flaticon.com/512/1317/1317755.png;" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="45" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-49" value="&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;hltb matching reports&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1139" y="114" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-50" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="181" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-51" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;htlb_playtimes&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1139" y="250" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-55" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;IGDB API&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="575.5" y="839" width="80" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-96" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-67" target="wBOgxTK9Ef12TYDMK7c5-73" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-67" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="823" y="698" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-68" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;igdb_games&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="809.5" y="772" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-69" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="823" y="828" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-70" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;+5 more IGDB endpoint tables&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="804.75" y="900" width="99.5" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-83" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-84" target="wBOgxTK9Ef12TYDMK7c5-80" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-73" target="wBOgxTK9Ef12TYDMK7c5-84" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-73" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Fuzzy Matching between igdb_games names and playnite_library names&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="779.5" y="417.5" width="150" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-78" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://cdn-icons-png.flaticon.com/512/1317/1317755.png;" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="342" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-79" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;igdb matching reports&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1139" y="411" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-80" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/csv-icon-448x512-rkoi7crs.png;" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="478" width="63" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-81" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;playnite_library_igdb&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1139" y="547" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-88" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="wBOgxTK9Ef12TYDMK7c5-84" target="wBOgxTK9Ef12TYDMK7c5-78" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-84" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Resolve IGDB-Library matching issues, add IGDB IDs to&amp;nbsp;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 13px;&quot;&gt;playnite_library&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="959" y="414" width="137" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-89" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.4_point_star_2;dx=0.8;fillColor=light-dark(#FFFFFF,#FFFF66);strokeColor=light-dark(#000000,#000000);" parent="1" vertex="1">
+          <mxGeometry x="823" y="698" width="31" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-90" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.4_point_star_2;dx=0.8;fillColor=light-dark(#FFFFFF,#FFFF66);strokeColor=light-dark(#000000,#000000);" parent="1" vertex="1">
+          <mxGeometry x="823" y="828" width="31" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-91" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.4_point_star_2;dx=0.8;fillColor=light-dark(#FFFFFF,#FFFF66);strokeColor=light-dark(#000000,#000000);" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="181" width="31" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-92" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.4_point_star_2;dx=0.8;fillColor=light-dark(#FFFFFF,#FFFF66);strokeColor=light-dark(#000000,#000000);" parent="1" vertex="1">
+          <mxGeometry x="1152.5" y="478" width="31" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-93" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.4_point_star_2;dx=0.8;fillColor=light-dark(#FFFFFF,#FFFF66);strokeColor=light-dark(#000000,#000000);" parent="1" vertex="1">
+          <mxGeometry x="61.25" y="567" width="31" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wBOgxTK9Ef12TYDMK7c5-94" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;- Tables in final data model&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="92" y="567" width="208" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

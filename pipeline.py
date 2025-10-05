@@ -1,7 +1,7 @@
 from src.utils import load_config, parse_args, setup_logger, ensure_directories_exist
 from src.game_library import extract_library_data, transform_library_data
 from src.how_long_to_beat import extract_hltb_data, transform_hltb_data
-from src.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline, copy_igdb_data_to_processed
+from src.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline, transform_igdb_data
 
 def run_data_pipeline(
         library=True,
@@ -58,7 +58,7 @@ def run_data_pipeline(
             igdb_fuzzy_match_pipeline(config=pipeline_config)
 
             # Copy igdb data to processed
-            copy_igdb_data_to_processed(config=pipeline_config)
+            transform_igdb_data(config=pipeline_config)
             
 
         logger.info('COMPLETE: Data pipeline has finished')
