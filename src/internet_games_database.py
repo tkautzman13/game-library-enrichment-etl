@@ -10,6 +10,7 @@ from tqdm import tqdm
 import ast
 from typing import Dict, Any, List, Tuple, Optional, Union
 from src.utils import get_logger
+import shutil
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
@@ -440,7 +441,6 @@ def igdb_library_fuzzy_matching(library_df: pd.DataFrame, igdb_df: pd.DataFrame,
     
     matches = []
 
-    logger.info('Beginning library/IGDB fuzzy matching...')
     for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
         game_name = row['name']
         

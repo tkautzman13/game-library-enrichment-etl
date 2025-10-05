@@ -1,3 +1,3 @@
 # Export library metadata (Paste this in the Playnite script editor)
 $path_lib = "C:/path/to/your/data/folder" # Fill in the path where you want to save the library data
-$PlayniteApi.Database.Games | Sort-Object -Property Name | Select Name, ID, @{Name='Categories'; Expr={($_.Categories | Select-Object -ExpandProperty "Name") -Join ', '}}, Hidden, CompletionStatus, ReleaseDate | ConvertTo-Csv | Out-File $path_lib -Encoding utf8
+$PlayniteApi.Database.Games | Sort-Object -Property Name | Select Name, ID, @{Name='Platforms'; Expr={($_.Platforms | Select-Object -ExpandProperty "Name") -Join ', '}}, @{Name='Categories'; Expr={($_.Categories | Select-Object -ExpandProperty "Name") -Join ', '}}, Hidden, CompletionStatus, ReleaseDate | ConvertTo-Csv | Out-File $path_lib -Encoding utf8
