@@ -47,6 +47,22 @@ The purpose of this ETL pipeline is to automatically build out a personal video 
 - **Sample data setup available** - for testing without API credentials
 - **Task Scheduler compatible** - for automated daily/weekly runs
 
+### Quick Start
+To run the pipeline, see below CLI prompts:
+
+```bash
+# Test with provided sample data (no API credentials or library data needed)
+python pipeline.py --config sample.yaml --skip_igdb_api 
+
+# Run full enrichment pipeline using config.yaml (config.yaml must contain igdb credentials)
+python pipeline.py
+
+# Run specific components only
+python pipeline.py --config config.yaml --library
+python pipeline.py --config config.yaml --hltb
+python pipeline.py --config config.yaml --library --igdb
+python pipeline.py --config config.yaml --library --skip_igdb_api
+```
 
 ## Output & Results
 
