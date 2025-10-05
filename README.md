@@ -47,72 +47,6 @@ The purpose of this ETL pipeline is to automatically build out a personal video 
 - **Sample data setup available** - for testing without API credentials
 - **Task Scheduler compatible** - for automated daily/weekly runs
 
-### Prerequisites
-- Python 3.12+
-- *Optional: IGDB API credentials (free from Twitch Developer Portal)*
-    - *Sample file exists to skip IGDB API credentials (see configuration setup below)*
-- *Optional: Playnite installation for full functionality*
-    - *NOTE: without Playnite, many manual steps will be required to setup library data extraction for pipeline*
-
-### Installation
-```bash
-git clone https://github.com/tkautzman13/game-library-enrichment-etl.git
-cd game-library-enrichment-etl
-pip install -r requirements.txt
-```
-
-### Configuration
-**If you don't want to setup IGDB API credentials and just want to run the pipeline using the sample data**: 
-- Skip this section and go straight to [Quick Start](#Quick-Start).
-
-**If you wish to run your own library through the pipeline *and* you have setup IGDB API credentials**:
-1. Copy `sample.yaml` to `config.yaml`
-2. Update your IGDB API credentials (if you want to pull all IGDB data):
-```yaml
-igdb_api:
-  client_id: "your_client_id"
-  client_secret: "your_client_secret"
-```
-3. The project will output CSVs for the data model within the project data folder by default. If you wish to change this, adjust the following variables:
-```yaml
-data:
-  library_source_file: "data/library_sample_data.csv" # Change to your own library file path if needed
-  library_raw_path: "data/raw/library/"
-  library_processed_path: "data/processed/library/"
-
-  hltb_raw_path: "data/raw/hltb/extracts/"
-  hltb_processed_path: "data/processed/hltb/"
-  hltb_report_path: "data/processed/hltb/reports/"
-
-  igdb_raw_path: "data/sample/" # Change to "data/raw/igdb/" if using API credentials
-  igdb_processed_path: "data/processed/igdb/"
-  igdb_report_path: "data/processed/igdb/reports/"
-```
-
-### Quick Start
-To run the pipeline, see below CLI prompts:
-
-```bash
-# Test with provided sample data (no API credentials or library data needed)
-python pipeline.py --config sample.yaml --skip_igdb_api 
-
-# Run full enrichment pipeline using config.yaml (config.yaml must contain igdb credentials)
-python pipeline.py
-
-# Run specific components only
-python pipeline.py --config config.yaml --library
-python pipeline.py --config config.yaml --hltb
-python pipeline.py --config config.yaml --library --igdb
-python pipeline.py --config config.yaml --library --skip_igdb_api
-```
-
-### Using Your Own Library
-If you want to use this script with your own game library, **it is highly recommended you use Playnite** to extract your library data using the code found in the `playnite_library_extract.ps1` script. The pipeline expects the library to be formatted a certain way, and will require edits if the library dataset format is different. You also may want to adjust the `transform_library_data()` function in `game_library.py` to remove any specific filtering and cleaning steps you don't want/need. Currently, the steps present in this function are for my own personal use case*
-
-To set up the `playnite_library_extract.ps1` script to extract your Playnite library data: 
-1. In Playnite, go to Settings -> Scripts
-2. Add the code from `playnite_library_extract.ps1` to one of the script text boxes (I place it in the 'Execute on application start' option)
-3. If you placed the code in the 'Execute on application start' or 'Execute on application shutdown', you may want to set up a Task Scheduler task or CRON job to automatically restart Playnite on a regular basis to execute the script. The code found in the `playnite_restart.ps1` script is what I used to set this up
 
 ## Output & Results
 
@@ -150,11 +84,6 @@ This ETL pipeline creates the foundation for several downstream projects:
     - **Daily Playtime Forecasting**: Forecast future daily playtimes
     - **Game Reflection NLP Projects**: Further enhance knowledge of personal gaming preferences
     - **Game Screenshot Computer Vision Projects**: Cluster games with similar artistic design, identify characters and UI elements on screen, etc.
-
-In addition, I'm planning on adding more functionalities to the ETL pipeline in the future (most of these additions are meant to help me build out my skills in the following areas):
-- [ ] Alerting and monitoring to inform the user whenever the pipeline fails
-- [ ] Unit testing
-- [ ] Data validation and testing
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
