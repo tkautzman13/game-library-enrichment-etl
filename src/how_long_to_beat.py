@@ -69,7 +69,7 @@ def extract_hltb_data(
                 "similarity": element.similarity,
                 "hltb_main": element.main_story,
                 "hltb_extra": (element.main_extra - element.main_story),
-                "hltb_completion": (element.completionist - element.main_story),
+                "hltb_completion": (element.completionist - element.main_extra),
                 "library_name": row["name"],
                 "library_id": row["id"]
             }
