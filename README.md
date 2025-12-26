@@ -48,6 +48,8 @@ The purpose of this ETL pipeline is to automatically build out a personal video 
 - **Task Scheduler compatible** - for automated daily/weekly runs
 
 ### Quick Start
+    | Note: Requires Python >= 14.2
+    
 To run the pipeline, see below CLI prompts:
 
 ```bash
