@@ -38,7 +38,7 @@ def run_data_pipeline(
             logger.info(' HOWLONGTOBEAT')
             logger.info("=" * 120)
             # Collect HLTB playtime data
-            extract_hltb_data(config=pipeline_config, full_run=True)
+            extract_hltb_data(config=pipeline_config, full_run=False)
 
             # Process HLTB data
             transform_hltb_data(config=pipeline_config)

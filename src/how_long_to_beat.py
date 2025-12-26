@@ -249,7 +249,7 @@ def transform_hltb_data(
             "hltb_completion",
         ]
     ].to_csv(
-        f"{hltb_processed_path}/test/hltb_playtimes.csv",
+        f"{hltb_processed_path}/hltb_playtimes.csv",
         index=False,
     )
 
