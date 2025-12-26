@@ -1,6 +1,7 @@
 from howlongtobeatpy import HowLongToBeat, SearchModifiers
 import pandas as pd
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from pathlib import Path
 from tqdm import tqdm
 from typing import Dict, Any
@@ -9,7 +10,8 @@ import os
 
 
 def extract_hltb_data(
-    config: Dict[str, Any]
+    config: Dict[str, Any],
+    full_run: str = False
 ) -> None:
     """
     Queries HowLongToBeat and extracts raw time-to-beat data for each game in the library.
@@ -19,11 +21,15 @@ def extract_hltb_data(
     -----------
     config : Dict[str, Any]
         Configuration dictionary containing data paths and settings.
+    full_run : str
+        Determines if a HLTB refresh should be done for the entire library, or just newly
+        added or released games. A full run deletes the current hltb_proccessed_file.
 
     Returns:
     --------
     None
     """
+
     logger = get_logger()
 
     logger.info("Beginning HLTB data extraction...")
@@ -31,17 +37,35 @@ def extract_hltb_data(
     # File Paths
     library_cleaned_file = f'{config["data"]["library_processed_path"]}playnite_library.csv'
     hltb_raw_path = config["data"]["hltb_raw_path"]
+    hltb_processed_file = f'{config["data"]["hltb_processed_path"]}hltb_playtimes.csv'
 
     logger.debug("Reading prepared library data...")
 
-    # Import _library_df_prep.csv
     library_df = pd.read_csv(library_cleaned_file)
+    if Path(hltb_processed_file).exists():
+        hltb_proc_df = pd.read_csv(hltb_processed_file)
+
+    # Use full library if full_run = True, else use existing hltb_processed_file
+    if full_run == True:
+        game_list_df = library_df
+    else:
+        game_list_df = library_df.merge(
+            hltb_proc_df[['library_id', 'hltb_extract_date']], 
+            how='left', 
+            left_on='id', 
+            right_on='library_id'
+        )
+
+        game_list_df = game_list_df[
+            (game_list_df['hltb_extract_date'].isna()) | # Newly added games
+            (pd.to_datetime(game_list_df['release_date']) >= datetime.now() - relativedelta(months=6)) # Newly released games
+            ]
 
     all_hltb_data = []
 
     logger.info("Fetching HLTB data...")
     # For loop to query HLTB data
-    for index, row in tqdm(library_df.iterrows(), total=len(library_df)):
+    for index, row in tqdm(game_list_df.iterrows(), total=len(game_list_df)):
         # Prepare the search name
         search_name = row["name_no_punct"]
         
@@ -49,17 +73,38 @@ def extract_hltb_data(
         if search_name.startswith('Pokémon'):
             search_name = search_name.replace('Version', '').strip()
         
-        # Get results_list (Check if game is marked as "DLC")
-        if isinstance(row["categories"], str) and "DLC" in row["categories"]:
-            results_list = HowLongToBeat().search(
-                search_name, similarity_case_sensitive=False
-            )
-        else:
-            results_list = HowLongToBeat().search(
-                search_name,
-                similarity_case_sensitive=False,
-                search_modifiers=SearchModifiers.HIDE_DLC,
-            )
+        search_modifiers = None
+        if not (isinstance(row["categories"], str) and "DLC" in row["categories"]):
+            search_modifiers = SearchModifiers.HIDE_DLC
+        
+        # Get results_list with retry logic
+        results_list = None
+        for attempt in range(2):
+            try:
+                if search_modifiers:
+                    results_list = HowLongToBeat().search(
+                        search_name,
+                        similarity_case_sensitive=False,
+                        search_modifiers=search_modifiers,
+                    )
+                else:
+                    results_list = HowLongToBeat().search(
+                        search_name, similarity_case_sensitive=False
+                    )
+                
+                # If a valid result is returned (not None), break out of retry loop
+                if results_list is not None:
+                    break
+            except Exception as e:
+                # Log the error if needed
+                if attempt == 0:
+                    logger.warning(f"First attempt failed for '{search_name}': {e}")
+                else:
+                    logger.error(f"Second attempt failed for '{search_name}': {e}")
+
+        # Skip if results_list is still None after retries
+        if results_list is None:
+            continue
 
         # Process all results for this game
         for element in results_list:
@@ -74,9 +119,10 @@ def extract_hltb_data(
                 "library_id": row["id"]
             }
             all_hltb_data.append(row_data)
-
-    # Create DataFrame once from all collected data
+            
+    # Create DataFrame once from all collected data - add hltb_extract_date
     hltb_raw_df = pd.DataFrame(all_hltb_data)
+    hltb_raw_df['hltb_extract_date'] = datetime.now()
 
     logger.info("HLTB data successfully extracted")
 
@@ -98,6 +144,10 @@ def extract_hltb_data(
         os.makedirs(hltb_raw_path)
 
     hltb_raw_df.to_csv(f"{hltb_raw_path}/hltb_raw_{current_datetime}.csv", index=False)
+
+    # Remove hltb_processed_file, if it exists (this ensures downstream processes don't use an old file)
+    if full_run == True:
+        Path(hltb_processed_file).unlink(missing_ok=True)
 
     logger.info(
         f"COMPLETE: Successfully extracted raw HLTB data and stored in: {hltb_raw_path}/hltb_raw_{current_datetime}.csv"
@@ -124,11 +174,11 @@ def transform_hltb_data(
     None
     """
     logger = get_logger()
-    
+
     logger.info("Beginning HLTB data processing...")
 
     hltb_raw_path = config["data"]["hltb_raw_path"]
-    processed_path = config["data"]["hltb_processed_path"]
+    hltb_processed_path = config["data"]["hltb_processed_path"]
     hltb_issues_report_path = config["data"]["hltb_report_path"]
     library_cleaned_file = f'{config["data"]["library_processed_path"]}playnite_library.csv'
 
@@ -142,28 +192,52 @@ def transform_hltb_data(
 
     # Step 3: Filter and match HLTB data
     logger.debug("Processing HLTB matches...")
-    hltb_processed_df = filter_and_match_hltb_data(hltb_raw_df, library_df)
+    hltb_matched_df = filter_and_match_hltb_data(hltb_raw_df, library_df)
 
     # Step 4: Generate comprehensive report (optional)
     if generate_report:
-        # Need to recreate hltb_with_library for reporting
         hltb_filtered_df = hltb_raw_df[
             hltb_raw_df["similarity"]
             == hltb_raw_df.groupby(by="library_id", as_index=False)[
                 "similarity"
             ].transform("max")
         ]
+
         hltb_filtered_df = hltb_filtered_df[~hltb_filtered_df.duplicated()]
+
+        # If hltb_processed_file exists (meaning a previous hltb extract was recorded), filter the library_df to just newly extracted games
+        hltb_processed_file = Path(f'{hltb_processed_path}hltb_playtimes.csv')
+        if hltb_processed_file.exists():
+            hltb_processed_df = pd.read_csv(hltb_processed_file)
+            library_df = library_df.merge(
+                hltb_processed_df['library_id'], 
+                how='left', 
+                left_on='id', 
+                right_on='library_id'
+            )
+            library_df = library_df[library_df['library_id'].isna()]
+
         hltb_with_library_df = hltb_filtered_df.merge(
             library_df[["id", "name", "library_release_year"]],
             how="right",
             left_on="library_id",
             right_on="id",
         )
+        hltb_with_library_df
 
         create_comprehensive_matching_report(
             hltb_with_library_df, library_df, hltb_issues_report_path
         )
+
+    # If hltb_processed_file exists, upsert newly matched records
+    hltb_processed_file = Path(f'{hltb_processed_path}hltb_playtimes.csv')
+    if hltb_processed_file.exists():
+        hltb_processed_df = pd.read_csv(hltb_processed_file)
+        hltb_processed_df.set_index('library_id', inplace=True, drop=False)
+        hltb_matched_df.set_index('library_id', inplace=True, drop=False)
+        hltb_processed_df = hltb_processed_df.combine_first(hltb_matched_df)
+    else:
+        hltb_processed_df = hltb_matched_df
 
     hltb_processed_df[
         [
@@ -175,12 +249,12 @@ def transform_hltb_data(
             "hltb_completion",
         ]
     ].to_csv(
-        f"{processed_path}hltb_playtimes.csv",
+        f"{hltb_processed_path}/test/hltb_playtimes.csv",
         index=False,
     )
 
     logger.info(
-        f"COMPLETE: HLTB data successfully processed and stored in: {processed_path}hltb_playtimes.csv"
+        f"COMPLETE: HLTB data successfully processed and stored in: {hltb_processed_path}hltb_playtimes.csv"
     )
 
 
