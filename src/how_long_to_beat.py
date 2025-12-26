@@ -225,9 +225,12 @@ def transform_hltb_data(
         )
         hltb_with_library_df
 
-        create_comprehensive_matching_report(
-            hltb_with_library_df, library_df, hltb_issues_report_path
-        )
+        if len(library_df) > 0:
+            create_comprehensive_matching_report(
+                hltb_with_library_df, library_df, hltb_issues_report_path
+            )
+        else:
+            logger.info(f'{len(hltb_matched_df)} games received HLTB updates. No newly added games to library. Report will be skipped.')
 
     # If hltb_processed_file exists, upsert newly matched records
     hltb_processed_file = Path(f'{hltb_processed_path}hltb_playtimes.csv')
@@ -235,7 +238,7 @@ def transform_hltb_data(
         hltb_processed_df = pd.read_csv(hltb_processed_file)
         hltb_processed_df.set_index('library_id', inplace=True, drop=False)
         hltb_matched_df.set_index('library_id', inplace=True, drop=False)
-        hltb_processed_df = hltb_processed_df.combine_first(hltb_matched_df)
+        hltb_processed_df = pd.concat([hltb_processed_df[~hltb_processed_df.index.isin(hltb_matched_df.index)], hltb_matched_df])
     else:
         hltb_processed_df = hltb_matched_df
 
@@ -247,6 +250,7 @@ def transform_hltb_data(
             "hltb_main",
             "hltb_extra",
             "hltb_completion",
+            "hltb_extract_date"
         ]
     ].to_csv(
         f"{hltb_processed_path}/hltb_playtimes.csv",
@@ -377,9 +381,12 @@ def filter_and_match_hltb_data(
     logger.debug("Resolving release year mismatches...")
 
     # Apply the function to each library_id group
+    hltb_with_library_df['library_id_copy'] = hltb_with_library_df['library_id']
     hltb_new_df = hltb_with_library_df.groupby("library_id", group_keys=False).apply(
-        select_best_hltb_match
+        select_best_hltb_match,
+        include_groups=False
     )
+    hltb_new_df.rename(columns = {'library_id_copy': 'library_id'}, inplace=True)
 
     logger.debug("COMPLETE: Matching complete.")
 
