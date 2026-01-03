@@ -80,6 +80,7 @@ python pipeline.py --config config.yaml --library --skip_igdb_api
 - **`igdb_keywords.csv`** - words or phrases that get tagged to a game ('World War 2', 'Steampunk', etc.)
 - **`igdb_themes.csv`** - game theme (Drama, Non-fiction, Sandbox, etc.)
 - **`igdb_player_perspectives.csv`** - describes the view/perspective of the player in a game (First person, Third Person, Text, etc.)
+- **`igdb_collections.csv`** - game collection (aka series)
 - **`/hltb_matching_reports/`** - detailed reports on data quality and matching success for HLTB
 - **`/igdb_matching_reports/`** - detailed reports on data quality and matching success for IGDB
 

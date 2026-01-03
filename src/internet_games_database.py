@@ -179,7 +179,7 @@ def extract_and_update_igdb_data(connection: IGDBWrapper, config: Dict[str, Any]
     # Specify parameters
     igdb_raw_path = config['data']['igdb_raw_path']
     endpoint_list = [
-        'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives'
+        'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives', 'collections'
     ]
 
     # Test IGDB Connection before running
@@ -642,7 +642,7 @@ def transform_igdb_data(config: Dict[str, Any]) -> None:
     logger.info('Beginning IGDB data transformation...')
 
     table_list = [
-        'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives'
+        'games', 'franchises', 'game_types', 'genres', 'themes', 'keywords', 'player_perspectives', 'collections'
     ]
 
     igdb_dfs = {}
@@ -656,7 +656,8 @@ def transform_igdb_data(config: Dict[str, Any]) -> None:
         'themes_bridge': 'themes',
         'keywords_bridge': 'keywords',
         'player_perspectives_bridge': 'player_perspectives',
-        'franchises_bridge': 'franchises'
+        'franchises_bridge': 'franchises',
+        'collections_bridge': 'collections'
     }
 
     for bridge_table, igdb_field in bridge_tables.items():
