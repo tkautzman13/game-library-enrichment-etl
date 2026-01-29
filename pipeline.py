@@ -1,4 +1,4 @@
-from src.utils import load_config, parse_args, setup_logger, ensure_directories_exist
+from src.utils import load_config, parse_args, setup_logger, ensure_directories_exist, send_error_email
 from src.game_library import extract_library_data, transform_library_data
 from src.how_long_to_beat import extract_hltb_data, transform_hltb_data
 from src.internet_games_database import connect_to_igdb, extract_and_update_igdb_data, igdb_fuzzy_match_pipeline, transform_igdb_data
@@ -64,8 +64,7 @@ def run_data_pipeline(
         logger.info('COMPLETE: Data pipeline has finished')
     
     except Exception as e:
-        logger.exception('Pipeline failed with error')
-        raise
+        send_error_email(str(e))
 
 
 if __name__ == '__main__':

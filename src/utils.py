@@ -5,6 +5,11 @@ import logging
 import os
 from datetime import datetime
 from typing import Iterable
+import smtplib
+from email.message import EmailMessage
+from dotenv import load_dotenv
+import os
+
 
 
 def load_config(config_path: str) -> dict:
@@ -184,3 +189,23 @@ def get_logger(name: str = 'data_pipeline') -> logging.Logger:
     Get an existing logger or create a new one if it doesn't exist.
     """
     return logging.getLogger(name)
+
+
+def send_error_email(error_message):
+    # Load .env file and email variables
+    load_dotenv()
+    email = os.getenv("EMAIL")
+    password = os.getenv("EMAIL_APP_PASSWORD")
+
+    # Create EmailMessage instance w/parameters
+    msg = EmailMessage()
+
+    msg['Subject'] = 'Game Library Metadata ETL Encountered An Error'
+    msg['From'] = email
+    msg['To'] = email
+    msg.set_content(f'The Game Library Metadata ETL job encountered an error:\n\n{error_message}')
+
+    # Establish SMTP host and port
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(email, password)
+        smtp.send_message(msg)
