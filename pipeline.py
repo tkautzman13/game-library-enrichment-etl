@@ -64,6 +64,7 @@ def run_data_pipeline(
         logger.info('COMPLETE: Data pipeline has finished')
     
     except Exception as e:
+        logger.error(e)
         send_error_email(str(e))
 
 
