@@ -8,9 +8,9 @@ import pandas as pd
 from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 import ast
-from typing import Dict, Any, List, Tuple, Optional, Union
+from typing import Dict, Any, List, Tuple, Optional
 from src.utils import get_logger
-import shutil
+from dotenv import load_dotenv
 
 
 def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
@@ -36,8 +36,10 @@ def connect_to_igdb(config: Dict[str, Any]) -> IGDBWrapper:
     logger.info('Beginning IGDB connection setup...')
 
     try:
-        client_id = config['igdb_api']['client_id']
-        client_secret = config['igdb_api']['client_secret']
+        load_dotenv()
+
+        client_id = os.getenv('IGDB_CLIENT_ID')
+        client_secret = os.getenv('IGDB_CLIENT_SECRET')
         grant_type = 'client_credentials'
 
         url = f'https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type={grant_type}'
